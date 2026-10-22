@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Uma Aventura de Amor para Dayane ❤️</title>
+    
+    <!-- Tailwind CSS CDN para estruturação responsiva ágil -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Press Start 2P & VT323 (Pixel/Minecraft) + Lora & Caveat (Carta Romântica) -->
+    <!-- Com fallbacks seguros locais caso offline -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+    <!-- Three.js + GLTFLoader + GSAP para animações cinematográficas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. IDENTIDADE VISUAL E PALETA OFICIAL OBRIGATÓRIA
+           ========================================================================== */
+        :root {
+            --color-yellow: #FFD13B;      /* Amarelo luminoso */
+            --color-pink: #FFA9B6;        /* Rosa-pêssego suave */
+            --color-orange: #E87A5D;      /* Laranja quente */
+            --color-green: #4B7931;       /* Verde-floresta */
+            --color-red: #E02424;         /* Vermelho-coração */
+            --color-graphite: #222222;    /* Preto-grafite */
+            
+            /* Cores de papel claro para leitura confortável com alto contraste */
+            --paper-cream: #FFF9EE;
+            --paper-pink-soft: #FFF1F4;
+            --paper-border: #E2C6A8;
+            --book-leather: #58131D;
+            --book-leather-dark: #3B0B12;
+
+            /* Tipografia com fallbacks locais seguros */
+            --font-pixel-title: 'Press Start 2P', 'Courier New', monospace;
+            --font-pixel-ui: 'VT323', 'Lucida Console', monospace;
+            --font-diary: 'Lora', 'Georgia', serif;
+            --font-handwriting: 'Caveat', 'Comic Sans MS', cursive;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(180deg, #E87A5D 0%, #FFA9B6 48%, #FFD13B 100%);
+            font-family: var(--font-diary);
+            color: var(--color-graphite);
+        }
+
+        /* Canvas 3D ocupando a tela inteira */
+        #webgl-container {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            transition: filter 0.8s ease;
+        }
+
+        #webgl-container.book-focus {
+            filter: brightness(0.86) saturate(1.08);
+        }
+
+        /* ==========================================================================
+           ESTÉTICA DE INTERFACE MINECRAFT / VOXEL ROMÂNTICO
+           ========================================================================== */
+        .font-pixel {
+            font-family: var(--font-pixel-title);
+            line-height: 1.45;
+        }
+
+        .font-pixel-lg {
+            font-family: var(--font-pixel-ui);
+            letter-spacing: 0.04em;
+        }
+
+        .font-diary {
+            font-family: var(--font-diary);
+            user-select: text;
+        }
+
+        .font-hand {
+            font-family: var(--font-handwriting);
+        }
+
+        /* Painel estilo bloco de madeira/pergaminho com borda voxel */
+        .voxel-card {
+            background: rgba(255, 249, 238, 0.94);
+            border: 4px solid var(--color-graphite);
+            box-shadow: 
+                inset 0 0 0 4px var(--color-pink),
+                0 10px 0 rgba(34, 34, 34, 0.35),
+                0 16px 32px rgba(34, 34, 34, 0.25);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        /* Botão Principal estilo Minecraft Interativo */
+        .mc-btn {
+            font-family: var(--font-pixel-title);
+            background: linear-gradient(180deg, var(--color-yellow) 0%, #F4B41A 100%);
+            color: var(--color-graphite);
+            border: 4px solid var(--color-graphite);
+            box-shadow: 
+                inset -4px -4px 0px #C88412,
+                inset 4px 4px 0px #FFF1AA,
+                0 6px 0 var(--color-graphite),
+                0 10px 20px rgba(34, 34, 34, 0.35);
+            padding: 1rem 1.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+            position: relative;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .mc-btn:hover:not(:disabled) {
+            background: linear-gradient(180deg, #FFE066 0%, var(--color-yellow) 100%);
+            transform: translateY(-2px);
+            box-shadow: 
+                inset -4px -4px 0px #D48E15,
+                inset 4px 4px 0px #FFF7CC,
+                0 8px 0 var(--color-graphite),
+                0 14px 24px rgba(224, 36, 36, 0.3);
+        }
+
+        .mc-btn:active:not(:disabled),
+        .mc-btn.pressed {
+            transform: translateY(4px);
+            box-shadow: 
+                inset 3px 3px 0px #C88412,
+                0 2px 0 var(--color-graphite);
+        }
+
+        .mc-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .mc-btn-red {
+            background: linear-gradient(180deg, #F23838 0%, var(--color-red) 100%);
+            color: #FFFFFF;
+            box-shadow: 
+                inset -4px -4px 0px #9E1414,
+                inset 4px 4px 0px #FF8A8A,
+                0 6px 0 var(--color-graphite),
+                0 10px 20px rgba(34, 34, 34, 0.35);
+        }
+
+        .mc-btn-red:hover:not(:disabled) {
+            background: linear-gradient(180deg, #FF5252 0%, #E02424 100%);
+            box-shadow: 
+                inset -4px -4px 0px #9E1414,
+                inset 4px 4px 0px #FF9E9E,
+                0 8px 0 var(--color-graphite),
+                0 14px 24px rgba(224, 36, 36, 0.45);
+        }
+
+        .mc-btn-secondary {
+            font-family: var(--font-pixel-ui);
+            font-size: 1.35rem;
+            background: var(--paper-cream);
+            color: var(--color-graphite);
+            border: 3px solid var(--color-graphite);
+            box-shadow: 
+                inset -3px -3px 0px #D8C3A5,
+                inset 3px 3px 0px #FFFFFF,
+                0 4px 0 var(--color-graphite);
+            padding: 0.45rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.12s ease;
+        }
+
+        .mc-btn-secondary:hover:not(:disabled) {
+            background: var(--color-yellow);
+            transform: translateY(-2px);
+            box-shadow: 
+                inset -3px -3px 0px #C88412,
+                inset 3px 3px 0px #FFF4B8,
+                0 6px 0 var(--color-graphite);
+        }
+
+        .mc-btn-secondary:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--color-graphite);
+        }
+
+        /* ==========================================================================
+           LIVRO TRIDIMENSIONAL INTERATIVO E ANIMAÇÃO DE VIRAR PÁGINA (CSS 3D)
+           ========================================================================== */
+        .book-perspective-stage {
+            perspective: 1800px;
+        }
+
+        .book-shell {
+            background: linear-gradient(135deg, var(--book-leather) 0%, var(--book-leather-dark) 100%);
+            border: 4px solid var(--color-graphite);
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 
+                0 20px 50px rgba(34, 34, 34, 0.55),
+                0 0 0 4px var(--color-yellow),
+                0 0 30px rgba(255, 209, 59, 0.35);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        /* Cantoneiras douradas em pixel art no livro */
+        .book-corner {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: var(--color-yellow);
+            border: 3px solid var(--color-graphite);
+            z-index: 20;
+            pointer-events: none;
+        }
+        .book-corner.tl { top: -4px; left: -4px; border-bottom-right-radius: 6px; }
+        .book-corner.tr { top: -4px; right: -4px; border-bottom-left-radius: 6px; }
+        .book-corner.bl { bottom: -4px; left: -4px; border-top-right-radius: 6px; }
+        .book-corner.br { bottom: -4px; right: -4px; border-top-left-radius: 6px; }
+
+        /* Folha de papel creme com bordas suaves e textura de diário */
+        .book-page-sheet {
+            background: 
+                radial-gradient(circle at top right, var(--paper-pink-soft), transparent 65%),
+                linear-gradient(90deg, #EADAC3 0%, var(--paper-cream) 6%, var(--paper-cream) 94%, #EFE1CE 100%);
+            border: 3px solid var(--color-graphite);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 24px rgba(232, 122, 93, 0.12),
+                4px 4px 0 #D5BFA3,
+                8px 8px 0 #BDA384;
+            transform-origin: left center;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        /* Sombra dinâmica durante o giro 3D da folha */
+        .page-curl-shadow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(90deg, rgba(34,34,34,0.22) 0%, transparent 25%, transparent 75%, rgba(34,34,34,0.18) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 15;
+        }
+
+        /* Animações de virar página para frente e para trás */
+        @keyframes flipPageNext {
+            0% {
+                transform: rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+            45% {
+                transform: rotateY(-88deg) skewY(3deg) scale(0.98);
+                filter: brightness(0.82);
+            }
+            55% {
+                transform: rotateY(80deg) skewY(-3deg) scale(0.98);
+                filter: brightness(0.88);
+            }
+            100% {
+                transform: rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes flipPagePrev {
+            0% {
+                transform: rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+            45% {
+                transform: rotateY(85deg) skewY(-3deg) scale(0.98);
+                filter: brightness(0.82);
+            }
+            55% {
+                transform: rotateY(-85deg) skewY(3deg) scale(0.98);
+                filter: brightness(0.88);
+            }
+            100% {
+                transform: rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .turning-next {
+            animation: flipPageNext 0.68s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+        }
+
+        .turning-prev {
+            animation: flipPagePrev 0.68s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+        }
+
+        /* Áreas clicáveis nas laterais da folha para virar página */
+        .page-edge-hotspot {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 44px;
+            z-index: 12;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease, background 0.2s ease;
+        }
+        .page-edge-hotspot:hover {
+            opacity: 1;
+            background: rgba(255, 209, 59, 0.18);
+        }
+        .page-edge-left { left: 0; border-right: 1px dashed rgba(232, 122, 93, 0.35); }
+        .page-edge-right { right: 0; border-left: 1px dashed rgba(232, 122, 93, 0.35); }
+
+        /* Scrollbar discreta e elegante para páginas em telas menores */
+        .diary-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .diary-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 169, 182, 0.2);
+            border-radius: 4px;
+        }
+        .diary-scroll::-webkit-scrollbar-thumb {
+            background: var(--color-orange);
+            border-radius: 4px;
+        }
+
+        /* Animação pulsante para indicadores e corações */
+        @keyframes floatPulse {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.06); }
+        }
+        .animate-float {
+            animation: floatPulse 2.6s ease-in-out infinite;
+        }
+
+        @keyframes arrowBounceRight {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(7px); }
+        }
+        .arrow-bounce {
+            animation: arrowBounceRight 1s ease-in-out infinite;
+        }
+
+        /* Destaque especial para a palavra ABRAÇO na cena final */
+        .hug-highlight {
+            display: inline-block;
+            background: var(--color-yellow);
+            color: var(--color-graphite);
+            padding: 0.15rem 0.65rem;
+            border: 3px solid var(--color-graphite);
+            border-radius: 6px;
+            box-shadow: 0 4px 0 var(--color-red);
+            transform: rotate(-1.5deg);
+        }
+
+        /* Respeito à preferência de movimento reduzido do sistema */
+        @media (prefers-reduced-motion: reduce) {
+            .turning-next, .turning-prev, .animate-float, .arrow-bounce {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="relative select-none overflow-hidden">
+
+    <!-- ==========================================================================
+         CANVAS 3D (THREE.JS: MUNDO MINECRAFT PÔR DO SOL + PERSONAGEM + LIVRO 3D)
+         ========================================================================== -->
+    <div id="webgl-container" aria-hidden="true"></div>
+
+    <!-- ==========================================================================
+         BARRA SUPERIOR FIXA (CONTROLE DE ÁUDIO, INDICADOR DE CENA E UPLOAD GLB)
+         ========================================================================== -->
+    <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 pointer-events-none">
+        <!-- Badge Romântico "Eu ❤️ Day" inspirado na referência do casal -->
+        <div class="pointer-events-auto flex items-center gap-2 bg-[#FFF9EE]/95 border-2 border-[#222222] px-3 py-1.5 rounded-md shadow-md">
+            <span class="inline-block w-3 h-3 bg-[#E02424] border border-[#222222]" title="Coração Voxel"></span>
+            <span class="font-pixel text-[10px] sm:text-xs text-[#222222] tracking-tight">
+                EU <span class="text-[#E02424]">❤️</span> DAY
+            </span>
+            <span id="model-status-badge" class="hidden md:inline-block ml-1 text-[11px] font-pixel-lg bg-[#FFD13B] text-[#222222] px-2 py-0.5 rounded border border-[#222222]">
+                Mascote 3D Ativo
+            </span>
+        </div>
+
+        <!-- Controles de Som, Câmera e Arquivo GLB -->
+        <div class="pointer-events-auto flex items-center gap-2">
+            <!-- Botão de Áudio Ambiente Romântico (Web Audio API) -->
+            <button id="btn-audio-toggle" type="button" class="mc-btn-secondary text-sm sm:text-base flex items-center gap-1.5 py-1 px-3" aria-label="Alternar som ambiente">
+                <span id="audio-icon">🔇</span>
+                <span id="audio-label" class="hidden sm:inline">Som: Off</span>
+            </button>
+
+            <!-- Botão de Reiniciar Jornada (visível após avançar da cena 1) -->
+            <button id="btn-reset-journey" type="button" class="hidden mc-btn-secondary text-sm sm:text-base py-1 px-2.5" title="Voltar ao início">
+                ↺ Início
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         CENA 1 — ENTRANDO NO MEU MUNDO (PÁGINA INICIAL)
+         ========================================================================== -->
+    <main id="scene-1-ui" class="fixed inset-0 z-20 flex flex-col justify-end md:justify-center items-center md:items-end p-4 sm:p-8 lg:pr-16 pointer-events-none transition-opacity duration-500">
+        
+        <div class="voxel-card max-w-lg w-full p-5 sm:p-7 pointer-events-auto mb-2 md:mb-0">
+            <!-- Cabeçalho decorativo pixel art -->
+            <div class="flex items-center justify-between border-b-2 border-[#E87A5D]/40 pb-2.5 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-[#E02424] text-lg">❤️</span>
+                    <span class="font-pixel text-[10px] sm:text-xs uppercase tracking-wider text-[#4B7931]">
+                        Mundo de Blocos • Pôr do Sol
+                    </span>
+                </div>
+                <span class="font-pixel-lg text-lg text-[#E87A5D]">Para: Dayane</span>
+            </div>
+
+            <!-- Citação Inicial Exata Obrigatória -->
+            <blockquote class="font-diary text-[#222222] text-base sm:text-xl leading-relaxed font-semibold mb-6 bg-[#FFF1F4]/80 p-3.5 sm:p-4 rounded border-l-4 border-[#E02424]">
+                “Em todas as aventuras que escolhi no meu mundo de blocos, a de te escolher como minha companheira foi definitivamente a melhor.”
+            </blockquote>
+
+            <!-- Indicador de interação com o personagem -->
+            <div class="flex items-center gap-2 mb-3 text-xs sm:text-sm text-[#222222]/80 font-diary italic">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-[#4B7931] animate-ping"></span>
+                <span>Dica: Passe o cursor no botão ou arraste o cenário 3D para olhar ao redor!</span>
+            </div>
+
+            <!-- Botão Principal Exato Obrigatório -->
+            <button id="btn-enter-world" type="button" class="mc-btn w-full text-xs sm:text-sm leading-snug">
+                <span class="arrow-bounce text-[#E02424] text-base sm:text-lg">➤</span>
+                <span>Clique para entender todo meu amor por você</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- ==========================================================================
+         CENA 2A — O LIVRO FECHADO NAS MÃOS DO PERSONAGEM
+         ========================================================================== -->
+    <section id="scene-2-closed-ui" class="fixed inset-0 z-20 hidden opacity-0 flex-col justify-end items-center p-5 sm:p-10 pointer-events-none transition-opacity duration-500">
+        <div class="voxel-card max-w-md w-full p-5 sm:p-6 text-center pointer-events-auto mb-2 sm:mb-4">
+            <div class="inline-flex items-center gap-2 bg-[#FFD13B] border-2 border-[#222222] px-3 py-1 rounded text-xs font-pixel text-[#222222] mb-3">
+                <span>📖</span>
+                <span>ITEM ESPECIAL ENCONTRADO</span>
+            </div>
+            <p class="font-diary text-[#222222] text-sm sm:text-base mb-4 leading-relaxed">
+                Guardei cada pensamento, cada viagem e cada detalhe da nossa história dentro deste livro.
+            </p>
+            <!-- Botão Exato do Livro -->
+            <button id="btn-open-book" type="button" class="mc-btn mc-btn-red w-full text-xs sm:text-sm">
+                <span>✨</span>
+                <span>Clique aqui para amar mais</span>
+                <span class="arrow-bounce">❤️</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         CENA 2B — O LIVRO ABERTO INTERATIVO (8 PÁGINAS DA DECLARAÇÃO)
+         ========================================================================== -->
+    <section id="scene-2-open-ui" class="fixed inset-0 z-20 hidden opacity-0 flex-col justify-between lg:justify-center items-center lg:items-end p-2.5 sm:p-6 lg:pr-12 pt-14 pb-3 pointer-events-none transition-opacity duration-500">
+        
+        <div class="book-perspective-stage w-full max-w-xl pointer-events-auto flex flex-col">
+            <!-- Moldura de Couro e Ouro do Livro -->
+            <div class="book-shell w-full">
+                <!-- Cantoneiras Douradas #FFD13B -->
+                <div class="book-corner tl"></div>
+                <div class="book-corner tr"></div>
+                <div class="book-corner bl"></div>
+                <div class="book-corner br"></div>
+
+                <!-- Folha Principal do Livro com suporte a Giro 3D -->
+                <article id="book-page-sheet" class="book-page-sheet w-full p-4 sm:p-7 md:p-8 flex flex-col justify-between min-h-[370px] sm:min-h-[430px] max-h-[75vh]">
+                    <div id="page-curl-shadow" class="page-curl-shadow"></div>
+
+                    <!-- Hotspots laterais para clicar nas bordas do livro -->
+                    <div id="hotspot-prev-page" class="page-edge-hotspot page-edge-left" title="Página anterior">
+                        <span class="font-pixel text-[#222222] bg-[#FFD13B] border-2 border-[#222222] px-1.5 py-1 rounded text-xs">◀</span>
+                    </div>
+                    <div id="hotspot-next-page" class="page-edge-hotspot page-edge-right" title="Próxima página">
+                        <span class="font-pixel text-[#222222] bg-[#FFD13B] border-2 border-[#222222] px-1.5 py-1 rounded text-xs">▶</span>
+                    </div>
+
+                    <!-- Topo da Página: Numeração e Detalhes Voxel -->
+                    <div>
+                        <div class="flex items-center justify-between border-b-2 border-[#E87A5D]/50 pb-2 mb-3">
+                            <span id="page-badge-number" class="font-pixel text-[10px] sm:text-xs bg-[#FFD13B] text-[#222222] border-2 border-[#222222] px-2.5 py-1 rounded">
+                                01/08
+                            </span>
+                            <div id="page-decorative-icons" class="flex items-center gap-1.5 text-sm sm:text-base">
+                                <span>❤️</span><span>✨</span><span>🌸</span>
+                            </div>
+                        </div>
+
+                        <!-- Título da Página -->
+                        <h2 id="page-title" class="font-pixel text-xs sm:text-sm md:text-base text-[#E02424] mb-3 leading-snug">
+                            Página 01 — Como começar
+                        </h2>
+                    </div>
+
+                    <!-- Corpo do Texto da Declaração (Scroll discreto se necessário em telas pequenas) -->
+                    <div id="page-content-scroll" class="diary-scroll overflow-y-auto pr-1 my-auto py-2">
+                        <p id="page-text" class="font-diary text-[#222222] text-base sm:text-lg md:text-[19px] leading-relaxed whitespace-pre-line">
+                            <!-- Preenchido dinamicamente pelo array de dados oficial -->
+                        </p>
+                    </div>
+
+                    <!-- Rodapé da Folha: Assinatura / Nota sutil e Barra de Progresso -->
+                    <div class="mt-4 pt-3 border-t-2 border-[#FFA9B6]/60 flex flex-col gap-2">
+                        <div class="flex items-center justify-between text-xs sm:text-sm">
+                            <span id="page-footer-note" class="font-hand text-lg sm:text-xl text-[#4B7931] font-bold">
+                                Para minha futura noiva Dayane ❤️
+                            </span>
+                            <span id="page-progress-label" class="font-pixel-lg text-base sm:text-lg text-[#222222]">
+                                Página 01 de 08
+                            </span>
+                        </div>
+                        <!-- Barra de progresso em blocos -->
+                        <div id="page-progress-blocks" class="grid grid-cols-8 gap-1 w-full h-2.5">
+                            <!-- 8 blocos gerados via JS -->
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Controles de Navegação do Livro (Anterior / Próxima / Encerramento na pág 08) -->
+                <div class="mt-3 flex items-center justify-between gap-2 px-1">
+                    <button id="btn-prev-page" type="button" class="mc-btn-secondary flex items-center gap-1.5 text-base sm:text-lg">
+                        <span>◀</span>
+                        <span>Anterior</span>
+                    </button>
+
+                    <span class="hidden sm:inline-block font-pixel-lg text-[#FFF9EE] text-base tracking-wide">
+                        Use as setas ou clique nas bordas
+                    </span>
+
+                    <button id="btn-next-page" type="button" class="mc-btn py-2 px-4 text-[11px] sm:text-xs">
+                        <span id="btn-next-page-text">Próxima Página</span>
+                        <span>▶</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         CENA 3 — CENA FINAL: O ABRAÇO VIRTUAL
+         ========================================================================== -->
+    <section id="scene-3-hug-ui" class="fixed inset-0 z-20 hidden opacity-0 flex-col justify-end items-center p-4 sm:p-8 pointer-events-none transition-opacity duration-700">
+        
+        <div class="voxel-card max-w-xl w-full p-5 sm:p-7 text-center pointer-events-auto mb-2 sm:mb-4">
+            <!-- Corações flutuantes no topo do card -->
+            <div class="flex justify-center items-center gap-3 mb-2 text-xl sm:text-2xl animate-float">
+                <span class="text-[#E02424]">❤️</span>
+                <span class="text-[#FFD13B]">✨</span>
+                <span class="text-[#E02424]">❤️</span>
+                <span class="text-[#FFD13B]">✨</span>
+                <span class="text-[#E02424]">❤️</span>
+            </div>
+
+            <!-- Texto Final Exato Obrigatório com destaque na palavra ABRAÇO -->
+            <h1 class="font-pixel text-sm sm:text-lg md:text-xl text-[#222222] leading-relaxed mb-3">
+                “Te amo, mi momozin... <span class="hug-highlight">ABAÇO</span>”
+            </h1>
+
+            <p id="hug-feedback-message" class="font-diary text-[#222222] text-sm sm:text-base mb-5 leading-relaxed">
+                Meus braços estão abertos esperando por você, minha Lady Day, minha senhora Bivolt, meu pão de ló e minha futura noiva!
+            </p>
+
+            <!-- Botões de Ação Final -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button id="btn-receive-hug" type="button" class="mc-btn mc-btn-red w-full sm:w-auto text-xs sm:text-sm">
+                    <span>🤗</span>
+                    <span>Receber abraço virtual</span>
+                </button>
+
+                <button id="btn-reopen-book" type="button" class="mc-btn-secondary w-full sm:w-auto py-2.5 px-4 text-base sm:text-lg">
+                    📖 Rever o nosso livro
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notificação Toast não-intrusiva (substitui qualquer alert) -->
+    <div id="voxel-toast" class="fixed bottom-4 left-4 z-50 hidden bg-[#222222] text-[#FFF9EE] border-2 border-[#FFD13B] px-4 py-2.5 rounded shadow-lg font-pixel-lg text-lg pointer-events-none"></div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT MODULARIZADO (DADOS, ÁUDIO, CENÁRIO 3D, PERSONAGEM GLB E LIVRO)
+         ========================================================================== -->
+    <script>
+        /**
+         * ============================================================================
+         * MÓDULO 1: CONTEÚDO OFICIAL DAS OITO PÁGINAS DA DECLARAÇÃO
+         * Textos preservados integralmente conforme solicitado.
+         * ============================================================================
+         */
+        const DECLARATION_PAGES = [
+            {
+                number: "01/08",
+                progressText: "Página 01 de 08",
+                title: "Página 01 — Como começar",
+                text: "“Bom, sinceramente, eu não sei como começar. De 90% do meu pensamento hoje, você está em 90,1%, e nos outros 9,9% penso em nós dois, em como ser melhor e em como construir um futuro para nós dois.”",
+                icons: ["❤️", "✨", "🌅"],
+                footerNote: "90,1% você + 9,9% nós dois = 100% amor ❤️",
+                characterPose: "Point_At_Text"
+            },
+            {
+                number: "02/08",
+                progressText: "Página 02 de 08",
+                title: "Página 02 — Para a mulher que está no meu coração",
+                text: "“Dedico para a mulher que está em meu coração estas palavras, para que tu leias e sorrias em cada letra, palavra, parágrafo, página e até mesmo em cada coisa que eu falar.”",
+                icons: ["💌", "🌸", "❤️"],
+                footerNote: "Cada sorriso seu ilumina o meu mundo ✨",
+                characterPose: "Explain_Content"
+            },
+            {
+                number: "03/08",
+                progressText: "Página 03 de 08",
+                title: "Página 03 — Amor puro e salgados",
+                text: "“Dedico estas palavras à pessoa que me mostrou que o amor é puro e doce, às vezes salgado, já que mi nena gosta tanto de salgado. Cumpri meu objetivo de comprar meus salgados pra ti... e, definitivamente, cumpri meu objetivo de conquistar alguém tão incrível.”",
+                icons: ["🥟", "❤️", "😊"],
+                footerNote: "Doce, puro e com os salgados da mi nena ❤️",
+                characterPose: "Point_At_Text"
+            },
+            {
+                number: "04/08",
+                progressText: "Página 04 de 08",
+                title: "Página 04 — Aventuras e novos lugares",
+                text: "“Meu objetivo quando estive contigo não foi só conquistar alguém incrível, mas também viajar, conhecer coisas novas, entender melhor como funciona a vida e construir um futuro diferente pra mim, algo pelo qual vejo que vale a pena lutar tanto... Você me fez incluir mais 3 estados do Nordeste na minha lista de ‘PELO MENOS EU PASSEI’. Daí eu já conquistei meu sonho de viajar, conquistar alguém incrível e conhecer coisas novas.”",
+                icons: ["🧭", "🌴", "☀️"],
+                footerNote: "Nossas viagens pelo Nordeste e pela vida 🗺️",
+                characterPose: "Explain_Content"
+            },
+            {
+                number: "05/08",
+                progressText: "Página 05 de 08",
+                title: "Página 05 — O futuro que quero construir",
+                text: "“Também conheci coisas novas, conheci a sua realidade, conheci a sua vida e as pessoas que estão ao seu redor. Você me apresentou tudo da maneira mais incrível e, mesmo à distância, continua me apresentando como funciona a vida realmente... Você também me faz querer ter uma visão maior de futuro. E quem diria que eu já tenho meus próximos 12 meses financeiros planejados e ainda estou buscando mais kkkkkk. Porque uma mulher incrível faz um homem se planejar e se construir.”",
+                icons: ["🏡", "📈", "✨"],
+                footerNote: "Planejando e construindo o nosso futuro juntos 🧱",
+                characterPose: "Point_At_Text"
+            },
+            {
+                number: "06/08",
+                progressText: "Página 06 de 08",
+                title: "Página 06 — Minha intenção com nós dois",
+                text: "“Tenha sempre a certeza de que tudo que eu faço por nós, por mim ou por ti vem de uma intenção incrível de ser melhor por nós, por ti e por mim também. Pode não ser a melhor forma, muito menos a mais perfeita... mas busco fazer da maneira mais verdadeira possível!”",
+                icons: ["🤝", "💛", "🌟"],
+                footerNote: "Sempre com a intenção mais verdadeira por nós dois 💛",
+                characterPose: "Explain_Content"
+            },
+            {
+                number: "07/08",
+                progressText: "Página 07 de 08",
+                title: "Página 07 — Aprendendo a amar",
+                text: "“Eu nunca errei por falta de intenção de acertar, mas porque sou ser humano e busco ser sempre a melhor versão. Quando erro, busco acertar. Porque, em um mundo cheio de amor descartável, eu busco, mesmo sem um manual, ser o homem mais incrível. Mas sou ser humano e não vim com instruções de como amar direito... É com você que vou aprendendo e é com você que construo meu manual.”",
+                icons: ["📘", "❤️", "🌱"],
+                footerNote: "Construindo o meu manual de amor ao seu lado 📖",
+                characterPose: "Point_At_Text"
+            },
+            {
+                number: "08/08",
+                progressText: "Página 08 de 08",
+                title: "Página 08 — Minha declaração final",
+                text: "“Dentro do que sei, dentro do que eu escuto e dentro do que eu sinto, eu busco ser o homem que vai te entregar presença, verdade, conhecimento e muito amor! E hoje busco te ouvir mais, ser mais presente, ser o homem que vai te entregar tudo que você merece por ser uma garota tão incrível.\n\nE dedico todo meu amor à mulher do meu Mustang vermelho, à minha garota Bivolt, minha senhora Bivolt, minha Lady Day, mi nena, meu pão de ló, meu momozin e minha futura noiva...\nEU TE AMO.”",
+                icons: ["🏎️", "💍", "❤️"],
+                footerNote: "Para minha Lady Day, mi nena, minha futura noiva: EU TE AMO! ❤️",
+                characterPose: "Explain_Content"
+            }
+        ];
+
+        /**
+         * ============================================================================
+         * MÓDULO 2: GERADOR DE TEXTURAS PIXEL ART E PERSONAGEM FIEL ÀS IMAGENS
+         * Constrói o personagem exatamente como nas imagens enviadas:
+         * - Cabelo cacheado/texturizado em múltiplos blocos 3D com volume
+         * - Rosto com sobrancelhas, olhos detalhados, blush suave, sorriso e óculos vazados
+         * - Camiseta preta com mangas curtas, emblema vermelho pixelado e corrente prateada
+         * - Braços em tom de pele com mangas pretas nos ombros e relógio metálico detalhado
+         * - Calça cargo escura quadriculada em pixel art e tênis preto/cinza com sola branca
+         * ============================================================================
+         */
+        class VoxelTextureFactory {
+            static createPixelCanvasTexture(width, height, drawFn) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                drawFn(ctx, width, height);
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.magFilter = THREE.NearestFilter;
+                texture.minFilter = THREE.NearestFilter;
+                texture.encoding = THREE.sRGBEncoding;
+                return texture;
+            }
+
+            // Textura da frente da camiseta preta com o símbolo vermelho idêntico à imagem e colar prateado
+            static createShirtFrontTexture() {
+                return this.createPixelCanvasTexture(32, 36, (ctx, w, h) => {
+                    // Fundo preto/grafite com micro-variação de tecido pixel art
+                    const baseColors = ['#141418', '#18181D', '#121216', '#1B1B21'];
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            ctx.fillStyle = baseColors[(x * 3 + y * 5) % baseColors.length];
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+
+                    // Gola escura
+                    ctx.fillStyle = '#0D0D10';
+                    ctx.fillRect(10, 0, 12, 3);
+                    ctx.fillRect(12, 3, 8, 2);
+
+                    // Emblema vermelho em pixel art (losango/diamante cortado por haste vertical igual à imagem)
+                    const emblemPixels = [
+                        "       ..       ",
+                        "      .XX.      ",
+                        "      .XX.      ",
+                        "     ..XX..     ",
+                        "    .XXXXXX.    ",
+                        "   .XXXXXXXX.   ",
+                        "  .XXX.XX.XXX.  ",
+                        " .XXX..XX..XXX. ",
+                        " .XX...XX...XX. ",
+                        "  .XXX.XX.XXX.  ",
+                        "   .XXXXXXXX.   ",
+                        "    .XXXXXX.    ",
+                        "     ..XX..     ",
+                        "      .XX.      ",
+                        "      .XX.      ",
+                        "      .XX.      ",
+                        "       ..       "
+                    ];
+                    const startX = 8;
+                    const startY = 12;
+                    for (let r = 0; r < emblemPixels.length; r++) {
+                        for (let c = 0; c < emblemPixels[r].length; c++) {
+                            const ch = emblemPixels[r][c];
+                            if (ch === 'X') {
+                                ctx.fillStyle = (r + c) % 2 === 0 ? '#C81E32' : '#A61728';
+                                ctx.fillRect(startX + c, startY + r, 1, 1);
+                            } else if (ch === '.') {
+                                ctx.fillStyle = '#6E101C';
+                                ctx.fillRect(startX + c, startY + r, 1, 1);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Textura geral do tecido preto (costas e mangas)
+            static createBlackFabricTexture() {
+                return this.createPixelCanvasTexture(16, 16, (ctx, w, h) => {
+                    const cols = ['#141418', '#18181D', '#121216', '#1A1A20'];
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            ctx.fillStyle = cols[(x + y * 2) % cols.length];
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                });
+            }
+
+            // Textura da calça cargo xadrez/pixelada escura idêntica às imagens
+            static createCargoPantsTexture() {
+                return this.createPixelCanvasTexture(16, 24, (ctx, w, h) => {
+                    const palette = ['#211F26', '#2A2731', '#1B1920', '#322E3A', '#25232B'];
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            const blockX = Math.floor(x / 2);
+                            const blockY = Math.floor(y / 2);
+                            ctx.fillStyle = palette[(blockX * 3 + blockY * 7) % palette.length];
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                    // Detalhe de costura/bolso lateral cargo
+                    ctx.fillStyle = '#16141A';
+                    ctx.fillRect(1, 8, 14, 1);
+                    ctx.fillRect(2, 14, 12, 1);
+                });
+            }
+
+            // Textura de pele quente bronzeada com sombreamento suave voxel
+            static createSkinTexture() {
+                return this.createPixelCanvasTexture(16, 16, (ctx, w, h) => {
+                    const skinTones = ['#DC8B53', '#E2925A', '#D6834B', '#E69962'];
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            ctx.fillStyle = skinTones[(x * 2 + y * 3) % skinTones.length];
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                });
+            }
+
+            // Textura do rosto fiel à prancha (sobrancelhas expressivas, olhos grandes castanho-escuros, brilho, blush e sorriso)
+            static createFaceTexture() {
+                return this.createPixelCanvasTexture(32, 32, (ctx, w, h) => {
+                    // Base de pele iluminada estilo render Minecraft
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            let color = '#E08E55';
+                            if (y < 8) color = '#D27D45'; // Sombra suave da testa junto à franja
+                            else if (y > 24) color = '#D7834B';
+                            else if (x > 10 && x < 22 && y >= 8 && y <= 22) color = '#EA9B64'; // Iluminação central do rosto
+                            ctx.fillStyle = color;
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+
+                    // Sobrancelhas grossas castanho-escuras (levemente arqueadas e simpáticas)
+                    ctx.fillStyle = '#23140D';
+                    ctx.fillRect(5, 9, 8, 2);
+                    ctx.fillRect(4, 10, 2, 1);
+                    ctx.fillRect(19, 9, 8, 2);
+                    ctx.fillRect(26, 10, 2, 1);
+
+                    // Olhos (Esclera branca + Íris castanho-escura/violeta escuro + Brilho branco)
+                    // Olho esquerdo
+                    ctx.fillStyle = '#FAF3E8';
+                    ctx.fillRect(5, 13, 8, 5);
+                    ctx.fillStyle = '#25181E';
+                    ctx.fillRect(8, 13, 4, 5);
+                    ctx.fillStyle = '#120B0E';
+                    ctx.fillRect(9, 14, 2, 4);
+                    ctx.fillStyle = '#FFFFFF'; // Brilho vivo no olho
+                    ctx.fillRect(8, 13, 2, 2);
+
+                    // Olho direito
+                    ctx.fillStyle = '#FAF3E8';
+                    ctx.fillRect(19, 13, 8, 5);
+                    ctx.fillStyle = '#25181E';
+                    ctx.fillRect(20, 13, 4, 5);
+                    ctx.fillStyle = '#120B0E';
+                    ctx.fillRect(21, 14, 2, 4);
+                    ctx.fillStyle = '#FFFFFF'; // Brilho vivo no olho
+                    ctx.fillRect(20, 13, 2, 2);
+
+                    // Blush avermelhado/alaranjado suave nas bochechas (igual às imagens)
+                    ctx.fillStyle = '#D96B43';
+                    ctx.fillRect(4, 19, 4, 2);
+                    ctx.fillRect(24, 19, 4, 2);
+
+                    // Nariz sutil em relevo de cor
+                    ctx.fillStyle = '#C9723D';
+                    ctx.fillRect(15, 17, 2, 3);
+
+                    // Sorriso confiante e carinhoso (levemente inclinado nos cantos como na prancha)
+                    ctx.fillStyle = '#3A1D12';
+                    ctx.fillRect(11, 23, 10, 1);
+                    ctx.fillRect(10, 22, 2, 1);
+                    ctx.fillRect(20, 22, 2, 1);
+                    // Sombra inferior do lábio
+                    ctx.fillStyle = '#C66E3A';
+                    ctx.fillRect(13, 24, 6, 1);
+                });
+            }
+        }
+
+        /**
+         * ============================================================================
+         * MÓDULO 3: MOTOR DE ÁUDIO ROMÂNTICO ORIGINAL (WEB AUDIO API)
+         * Gera melodia ambiente suave estilo caixinha de música / Minecraft pôr do sol
+         * e efeitos sonoros de clique cúbico, virar página e acorde de coração.
+         * ============================================================================
+         */
+        class RomanticAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.isMuted = true;
+                this.ambientTimer = null;
+                this.noteIndex = 0;
+
+                // Melodia calma e acolhedora em Fá Maior / Dó Maior
+                this.melodyNotes = [
+                    261.63, 329.63, 392.00, 493.88,
+                    349.23, 440.00, 523.25, 440.00,
+                    293.66, 349.23, 440.00, 523.25,
+                    392.00, 493.88, 587.33, 523.25
+                ];
+            }
+
+            initContext() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        this.ctx = new AudioCtx();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            ensureStartedOnFirstInteraction() {
+                this.initContext();
+                if (this.isMuted) {
+                    this.toggleAudio(true);
+                }
+            }
+
+            toggleAudio(forceState = null) {
+                this.initContext();
+                this.isMuted = forceState !== null ? !forceState : !this.isMuted;
+
+                const iconEl = document.getElementById('audio-icon');
+                const labelEl = document.getElementById('audio-label');
+
+                if (!this.isMuted) {
+                    if (iconEl) iconEl.textContent = '🔊';
+                    if (labelEl) labelEl.textContent = 'Som: On';
+                    this.startAmbientLoop();
+                    this.playBlockClick(587.33);
+                } else {
+                    if (iconEl) iconEl.textContent = '🔇';
+                    if (labelEl) labelEl.textContent = 'Som: Off';
+                    this.stopAmbientLoop();
+                }
+            }
+
+            startAmbientLoop() {
+                this.stopAmbientLoop();
+                if (this.isMuted || !this.ctx) return;
+
+                const playNextAmbientNote = () => {
+                    if (this.isMuted || !this.ctx) return;
+                    const freq = this.melodyNotes[this.noteIndex % this.melodyNotes.length];
+                    this.noteIndex++;
+
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.035, now + 0.35);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, now + 2.1);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 2.2);
+                };
+
+                playNextAmbientNote();
+                this.ambientTimer = setInterval(playNextAmbientNote, 2100);
+            }
+
+            stopAmbientLoop() {
+                if (this.ambientTimer) {
+                    clearInterval(this.ambientTimer);
+                    this.ambientTimer = null;
+                }
+            }
+
+            playBlockClick(freq = 440) {
+                if (this.isMuted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now);
+                osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + 0.08);
+
+                gain.gain.setValueAtTime(0.07, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+
+            playPageFlip() {
+                if (this.isMuted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(640, now + 0.14);
+
+                gain.gain.setValueAtTime(0.045, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.17);
+            }
+
+            playHeartChime() {
+                if (this.isMuted || !this.ctx) return;
+                const chord = [523.25, 659.25, 783.99, 1046.50];
+                chord.forEach((freq, idx) => {
+                    const now = this.ctx.currentTime + idx * 0.09;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.055, now + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.85);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.9);
+                });
+            }
+        }
+
+        /**
+         * ============================================================================
+         * MÓDULO 4: MUNDO 3D, PERSONAGEM GLB E LIVRO 3D (THREE.JS + GSAP)
+         * ============================================================================
+         */
+        class VoxelLoveWorld3D {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.scene = new THREE.Scene();
+                this.clock = new THREE.Clock();
+
+                // Rig do personagem com articulações corrigidas
+                this.mascotRoot = new THREE.Group();
+                this.rig = {
+                    headGroup: null,
+                    torsoGroup: null,
+                    leftShoulder: null,
+                    leftElbow: null,
+                    rightShoulder: null,
+                    rightElbow: null
+                };
+
+                // Livro 3D
+                this.bookGroup = new THREE.Group();
+                this.bookFrontCoverPivot = new THREE.Group();
+
+                // Partículas e Corações 3D
+                this.goldenParticles = null;
+                this.floatingHearts = [];
+                this.clouds = [];
+
+                // Interação de câmera suave
+                this.pointerOffset = { x: 0, y: 0 };
+                this.isDragging = false;
+                this.dragStart = { x: 0, y: 0 };
+                this.cameraOrbitAngle = 0;
+
+                this.currentPose = 'Idle_Gesture';
+
+                this.initRendererAndCamera();
+                this.initSunsetLighting();
+                this.buildVoxelEnvironment();
+                this.build3DBook();
+                this.buildArticulatedMascotFromSpec();
+                this.bindPointerEvents();
+            }
+
+            initRendererAndCamera() {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                this.camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 120);
+                // Posição inicial (Cena 1): Personagem à esquerda, card à direita no desktop
+                const isMobile = w < 768;
+                this.baseCamPos = isMobile
+                    ? { x: 0, y: 2.25, z: 6.2 }
+                    : { x: 1.15, y: 1.85, z: 5.0 };
+                this.baseLookAt = isMobile
+                    ? new THREE.Vector3(0, 1.25, 0)
+                    : new THREE.Vector3(0.85, 1.45, 0);
+
+                this.camera.position.set(this.baseCamPos.x, this.baseCamPos.y, this.baseCamPos.z);
+                this.camera.lookAt(this.baseLookAt);
+
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+                this.renderer.setSize(w, h);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+
+                this.container.appendChild(this.renderer.domElement);
+
+                // Neblina atmosférica rosa-pêssego/laranja do pôr do sol
+                this.scene.fog = new THREE.FogExp2(0xFFA9B6, 0.028);
+            }
+
+            initSunsetLighting() {
+                // Luz hemisférica com cores oficiais (#FFD13B no céu e #4B7931 no solo)
+                const hemiLight = new THREE.HemisphereLight(0xFFD13B, 0x4B7931, 0.72);
+                hemiLight.position.set(0, 15, 0);
+                this.scene.add(hemiLight);
+
+                // Luz direcional dourada do pôr do sol
+                this.sunLight = new THREE.DirectionalLight(0xFFD13B, 1.15);
+                this.sunLight.position.set(6, 9, 6);
+                this.sunLight.castShadow = true;
+                this.sunLight.shadow.mapSize.width = 1024;
+                this.sunLight.shadow.mapSize.height = 1024;
+                this.sunLight.shadow.camera.near = 0.5;
+                this.sunLight.shadow.camera.far = 30;
+                const d = 10;
+                this.sunLight.shadow.camera.left = -d;
+                this.sunLight.shadow.camera.right = d;
+                this.sunLight.shadow.camera.top = d;
+                this.sunLight.shadow.camera.bottom = -d;
+                this.scene.add(this.sunLight);
+
+                // Contra-luz quente (#E87A5D / #FFA9B6) para recortar o personagem
+                this.warmRimLight = new THREE.PointLight(0xE87A5D, 0.9, 14);
+                this.warmRimLight.position.set(-3, 3.2, -3);
+                this.scene.add(this.warmRimLight);
+
+                // Luz íntima frontal suave
+                this.frontWarmLight = new THREE.PointLight(0xFFA9B6, 0.55, 10);
+                this.frontWarmLight.position.set(0.5, 2.3, 3.0);
+                this.scene.add(this.frontWarmLight);
+            }
+
+            buildVoxelEnvironment() {
+                this.envGroup = new THREE.Group();
+                this.scene.add(this.envGroup);
+
+                const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+
+                // Materiais Voxel na paleta oficial
+                const grassMat = new THREE.MeshStandardMaterial({ color: 0x4B7931, roughness: 0.85 });
+                const grassLightMat = new THREE.MeshStandardMaterial({ color: 0x5B8E3D, roughness: 0.85 });
+                const dirtMat = new THREE.MeshStandardMaterial({ color: 0x6E472B, roughness: 0.9 });
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x54361E, roughness: 0.9 });
+                const cherryLeavesMat = new THREE.MeshStandardMaterial({ color: 0xFFA9B6, roughness: 0.7 });
+                const yellowFlowerMat = new THREE.MeshStandardMaterial({ color: 0xFFD13B, roughness: 0.5 });
+                const redHeartFlowerMat = new THREE.MeshStandardMaterial({ color: 0xE02424, roughness: 0.5 });
+                const waterMat = new THREE.MeshStandardMaterial({
+                    color: 0x4FA4E8,
+                    roughness: 0.2,
+                    metalness: 0.1,
+                    transparent: true,
+                    opacity: 0.82
+                });
+
+                // 1. Terreno em blocos verdes (#4B7931)
+                for (let x = -8; x <= 8; x++) {
+                    for (let z = -8; z <= 5; z++) {
+                        const dist = Math.sqrt(x * x + z * z);
+                        if (dist > 9.5) continue;
+
+                        // Pequenas colinas nas bordas traseiras
+                        let height = 0;
+                        if (z < -2 && Math.abs(x) > 2) height = 1;
+                        if (z < -4 && Math.abs(x) > 3) height = 2;
+
+                        for (let y = -1; y <= height; y++) {
+                            const isTop = (y === height);
+                            // Pequeno riacho à direita como na imagem de referência
+                            const isWater = (x >= 3 && x <= 4 && z >= -3 && z <= 2 && height === 0);
+
+                            const mat = isWater
+                                ? waterMat
+                                : (isTop ? ((x + z) % 2 === 0 ? grassMat : grassLightMat) : dirtMat);
+
+                            const block = new THREE.Mesh(boxGeo, mat);
+                            block.position.set(x, y - 0.5, z);
+                            block.receiveShadow = true;
+                            if (y > 0) block.castShadow = true;
+                            this.envGroup.add(block);
+
+                            // Flores em voxel espalhadas pelo jardim
+                            if (isTop && !isWater && dist > 1.8 && Math.random() < 0.16) {
+                                const stem = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.08), grassMat);
+                                stem.position.set(x + (Math.random() - 0.5) * 0.4, y + 0.12, z + (Math.random() - 0.5) * 0.4);
+                                const petalMat = Math.random() > 0.45 ? yellowFlowerMat : redHeartFlowerMat;
+                                const petal = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.22), petalMat);
+                                petal.position.y = 0.15;
+                                stem.add(petal);
+                                this.envGroup.add(stem);
+                            }
+                        }
+                    }
+                }
+
+                // 2. Árvores Voxel (Carvalho Verde #4B7931 e Cerejeiras Rosa #FFA9B6 da foto Eu & Day)
+                const createVoxelTree = (tx, ty, tz, leavesMaterial, hasLantern = false) => {
+                    const tree = new THREE.Group();
+                    tree.position.set(tx, ty, tz);
+
+                    // Tronco de 3 blocos
+                    for (let i = 0; i < 3; i++) {
+                        const trunk = new THREE.Mesh(boxGeo, trunkMat);
+                        trunk.position.set(0, i + 0.5, 0);
+                        trunk.castShadow = true;
+                        trunk.receiveShadow = true;
+                        tree.add(trunk);
+                    }
+
+                    // Copa em blocos
+                    for (let lx = -1; lx <= 1; lx++) {
+                        for (let lz = -1; lz <= 1; lz++) {
+                            for (let ly = 3; ly <= 4; ly++) {
+                                if (ly === 4 && Math.abs(lx) === 1 && Math.abs(lz) === 1) continue;
+                                const leaf = new THREE.Mesh(boxGeo, leavesMaterial);
+                                leaf.position.set(lx, ly + 0.4, lz);
+                                leaf.castShadow = true;
+                                tree.add(leaf);
+                            }
+                        }
+                    }
+
+                    // Lanterna suspensa brilhante (#FFD13B + #E87A5D) igual à referência
+                    if (hasLantern) {
+                        const chain = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.08), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+                        chain.position.set(1, 2.8, 0.8);
+                        const lanternGlow = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.36, 0.44, 0.36),
+                            new THREE.MeshBasicMaterial({ color: 0xFFD13B })
+                        );
+                        lanternGlow.position.y = -0.35;
+                        const lanternFrame = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.42, 0.08, 0.42),
+                            new THREE.MeshStandardMaterial({ color: 0xE87A5D })
+                        );
+                        lanternFrame.position.y = 0.22;
+                        lanternGlow.add(lanternFrame);
+                        chain.add(lanternGlow);
+                        tree.add(chain);
+                    }
+
+                    this.envGroup.add(tree);
+                };
+
+                createVoxelTree(-3.8, 0, -2.5, grassMat, true);
+                createVoxelTree(-5.2, 1, -5.2, cherryLeavesMat, false);
+                createVoxelTree(4.6, 1, -4.2, cherryLeavesMat, true);
+                createVoxelTree(2.2, 1, -6.0, grassLightMat, false);
+                createVoxelTree(-1.8, 1, -6.2, cherryLeavesMat, false);
+
+                // Pets fofos da imagem de referência (Cachorrinho branco com coleira vermelha e Porquinho rosa à esquerda)
+                this.buildCompanionPets();
+
+                // 3. Sol Cúbico Dourado Estilo Minecraft no Horizonte (#FFD13B)
+                const sunGroup = new THREE.Group();
+                sunGroup.position.set(4.5, 5.2, -14);
+                const sunCore = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.6, 2.6, 0.4),
+                    new THREE.MeshBasicMaterial({ color: 0xFFD13B })
+                );
+                const sunHalo = new THREE.Mesh(
+                    new THREE.BoxGeometry(3.5, 3.5, 0.2),
+                    new THREE.MeshBasicMaterial({ color: 0xFFA9B6, transparent: true, opacity: 0.45 })
+                );
+                sunHalo.position.z = -0.2;
+                sunGroup.add(sunCore, sunHalo);
+                this.scene.add(sunGroup);
+                this.sunGroup = sunGroup;
+
+                // 4. Nuvens em Blocos Rosa-Pêssego (#FFA9B6) e Creme
+                const cloudMat = new THREE.MeshBasicMaterial({ color: 0xFFF0F3, transparent: true, opacity: 0.82 });
+                for (let i = 0; i < 6; i++) {
+                    const cloud = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.4 + Math.random() * 1.8, 0.45, 1.2),
+                        cloudMat
+                    );
+                    cloud.position.set((i - 2.5) * 4.2, 5.8 + (i % 2) * 0.9, -10 - (i % 3) * 2);
+                    this.scene.add(cloud);
+                    this.clouds.push(cloud);
+                }
+
+                // 5. Partículas Luminosas Douradas (#FFD13B)
+                const particleCount = 65;
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 14;
+                    positions[i * 3 + 1] = Math.random() * 5 + 0.3;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+                }
+                const particleGeo = new THREE.BufferGeometry();
+                particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const particleMat = new THREE.PointsMaterial({
+                    color: 0xFFD13B,
+                    size: 0.14,
+                    transparent: true,
+                    opacity: 0.85
+                });
+                this.goldenParticles = new THREE.Points(particleGeo, particleMat);
+                this.scene.add(this.goldenParticles);
+
+                // 6. Corações Voxel 3D Flutuantes (#E02424)
+                for (let i = 0; i < 12; i++) {
+                    const heart = this.createVoxelHeartMesh(0.08);
+                    heart.position.set(
+                        (Math.random() - 0.5) * 6,
+                        0.6 + Math.random() * 3.2,
+                        (Math.random() - 0.5) * 4
+                    );
+                    heart.userData = {
+                        baseY: heart.position.y,
+                        speed: 1.2 + Math.random() * 1.5,
+                        phase: Math.random() * Math.PI * 2
+                    };
+                    this.scene.add(heart);
+                    this.floatingHearts.push(heart);
+                }
+            }
+
+            /**
+             * Adiciona o lobo/cachorrinho branco com coleira vermelha e o porquinho rosa
+             * que aparecem no canto esquerdo da foto "TE AMO - Day & Eu"
+             */
+            buildCompanionPets() {
+                const box = new THREE.BoxGeometry(1, 1, 1);
+
+                // 1. Cachorrinho (Wolf do Minecraft)
+                const dogGroup = new THREE.Group();
+                const whiteFur = new THREE.MeshStandardMaterial({ color: 0xF2EFE9, roughness: 0.8 });
+                const darkNose = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
+                const redCollarMat = new THREE.MeshStandardMaterial({ color: 0xE02424, roughness: 0.4 });
+
+                const dogBody = new THREE.Mesh(box, whiteFur);
+                dogBody.scale.set(0.42, 0.36, 0.65);
+                dogBody.position.set(0, 0.38, 0);
+
+                const dogCollar = new THREE.Mesh(box, redCollarMat);
+                dogCollar.scale.set(0.44, 0.38, 0.12);
+                dogCollar.position.set(0, 0.40, 0.25);
+
+                const dogHead = new THREE.Mesh(box, whiteFur);
+                dogHead.scale.set(0.38, 0.36, 0.36);
+                dogHead.position.set(0, 0.56, 0.42);
+
+                const dogSnout = new THREE.Mesh(box, whiteFur);
+                dogSnout.scale.set(0.2, 0.16, 0.22);
+                dogSnout.position.set(0, 0.50, 0.64);
+
+                const dogNose = new THREE.Mesh(box, darkNose);
+                dogNose.scale.set(0.08, 0.07, 0.06);
+                dogNose.position.set(0, 0.55, 0.75);
+
+                const earL = new THREE.Mesh(box, whiteFur);
+                earL.scale.set(0.1, 0.14, 0.08);
+                earL.position.set(-0.12, 0.78, 0.38);
+                const earR = earL.clone();
+                earR.position.x = 0.12;
+
+                [-0.12, 0.12].forEach(lx => {
+                    [-0.2, 0.2].forEach(lz => {
+                        const leg = new THREE.Mesh(box, whiteFur);
+                        leg.scale.set(0.11, 0.26, 0.11);
+                        leg.position.set(lx, 0.13, lz);
+                        dogGroup.add(leg);
+                    });
+                });
+
+                dogGroup.add(dogBody, dogCollar, dogHead, dogSnout, dogNose, earL, earR);
+                dogGroup.position.set(-2.35, 0, -0.8);
+                dogGroup.rotation.y = 0.48;
+                this.envGroup.add(dogGroup);
+
+                // 2. Porquinho rosa fofo
+                const pigGroup = new THREE.Group();
+                const pinkMat = new THREE.MeshStandardMaterial({ color: 0xFFA9B6, roughness: 0.7 });
+                const snoutMat = new THREE.MeshStandardMaterial({ color: 0xE87A5D, roughness: 0.6 });
+
+                const pigBody = new THREE.Mesh(box, pinkMat);
+                pigBody.scale.set(0.46, 0.38, 0.62);
+                pigBody.position.set(0, 0.32, 0);
+
+                const pigHead = new THREE.Mesh(box, pinkMat);
+                pigHead.scale.set(0.4, 0.38, 0.38);
+                pigHead.position.set(0, 0.42, 0.4);
+
+                const pigSnout = new THREE.Mesh(box, snoutMat);
+                pigSnout.scale.set(0.22, 0.15, 0.1);
+                pigSnout.position.set(0, 0.38, 0.61);
+
+                [-0.14, 0.14].forEach(lx => {
+                    [-0.18, 0.18].forEach(lz => {
+                        const leg = new THREE.Mesh(box, pinkMat);
+                        leg.scale.set(0.12, 0.2, 0.12);
+                        leg.position.set(lx, 0.1, lz);
+                        pigGroup.add(leg);
+                    });
+                });
+
+                pigGroup.add(pigBody, pigHead, pigSnout);
+                pigGroup.position.set(-1.75, 0, 0.65);
+                pigGroup.rotation.y = 0.65;
+                this.envGroup.add(pigGroup);
+            }
+
+            createVoxelHeartMesh(voxelSize = 0.08) {
+                const group = new THREE.Group();
+                const mat = new THREE.MeshStandardMaterial({
+                    color: 0xE02424,
+                    emissive: 0x550808,
+                    roughness: 0.35
+                });
+                // Matriz 5x4 de um coração em pixel art
+                const pattern = [
+                    [0, 1, 0, 1, 0],
+                    [1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 0],
+                    [0, 0, 1, 0, 0]
+                ];
+                const geo = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
+                for (let r = 0; r < pattern.length; r++) {
+                    for (let c = 0; c < pattern[r].length; c++) {
+                        if (pattern[r][c] === 1) {
+                            const cube = new THREE.Mesh(geo, mat);
+                            cube.position.set((c - 2) * voxelSize, (2 - r) * voxelSize, 0);
+                            group.add(cube);
+                        }
+                    }
+                }
+                return group;
+            }
+
+            /**
+             * Constrói o Livro 3D do Nosso Amor com capa vinho, detalhes dourados (#FFD13B),
+             * coração em #E02424, lombada e folhas creme.
+             */
+            build3DBook() {
+                this.bookGroup = new THREE.Group();
+
+                const coverMat = new THREE.MeshStandardMaterial({ color: 0x58131D, roughness: 0.6 });
+                const goldMat = new THREE.MeshStandardMaterial({ color: 0xFFD13B, metalness: 0.4, roughness: 0.3 });
+                const pagesMat = new THREE.MeshStandardMaterial({ color: 0xFFF9EE, roughness: 0.8 });
+
+                // Contracapa traseira
+                const backCover = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.58, 0.03), coverMat);
+                backCover.position.set(0.23, 0, -0.04);
+                this.bookGroup.add(backCover);
+
+                // Lombada
+                const spine = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.58, 0.11), coverMat);
+                spine.position.set(0, 0, 0);
+                this.bookGroup.add(spine);
+
+                // Bloco de páginas creme
+                const pageBlock = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.54, 0.06), pagesMat);
+                pageBlock.position.set(0.22, 0, 0);
+                this.bookGroup.add(pageBlock);
+
+                // Pivô da capa frontal para abrir em 3D
+                this.bookFrontCoverPivot = new THREE.Group();
+                this.bookFrontCoverPivot.position.set(0, 0, 0.04);
+
+                const frontCover = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.58, 0.03), coverMat);
+                frontCover.position.set(0.23, 0, 0);
+                this.bookFrontCoverPivot.add(frontCover);
+
+                // Bordas douradas (#FFD13B) na capa
+                const goldTrim = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.50, 0.035), goldMat);
+                goldTrim.position.set(0.23, 0, 0.002);
+                this.bookFrontCoverPivot.add(goldTrim);
+
+                const innerCover = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.44, 0.038), coverMat);
+                innerCover.position.set(0.23, 0, 0.003);
+                this.bookFrontCoverPivot.add(innerCover);
+
+                // Emblema de coração #E02424 na capa do livro 3D
+                const coverHeart = this.createVoxelHeartMesh(0.035);
+                coverHeart.position.set(0.23, 0.02, 0.025);
+                this.bookFrontCoverPivot.add(coverHeart);
+
+                this.bookGroup.add(this.bookFrontCoverPivot);
+
+                // Posição inicial oculta até a Cena 2
+                this.bookGroup.position.set(-0.22, 1.15, 0.52);
+                this.bookGroup.rotation.set(-0.35, 0.25, 0);
+                this.bookGroup.scale.set(0.001, 0.001, 0.001);
+                this.bookGroup.visible = false;
+
+                this.mascotRoot.add(this.bookGroup);
+            }
+
+            /**
+             * Constrói o personagem 3D de alta fidelidade idêntico às imagens da prancha
+             * e da foto "TE AMO (Day & Eu)":
+             * - Cabelo cacheado/texturizado com dezenas de tufos em relevo 3D
+             * - Óculos retangulares vazados com lentes translúcidas sobre o rosto expressivo
+             * - Camiseta preta com mangas curtas + emblema vermelho pixel art + corrente prateada 3D
+             * - Braços articulados com mangas pretas, antebraços, mãos com polegar e relógio prateado detalhado
+             * - Calça cargo escura texturizada e tênis estilo skate preto/cinza com biqueira e sola branca
+             */
+            buildArticulatedMascotFromSpec() {
+                const childrenToRemove = this.mascotRoot.children.filter(c => c !== this.bookGroup);
+                childrenToRemove.forEach(c => this.mascotRoot.remove(c));
+
+                const unitBox = new THREE.BoxGeometry(1, 1, 1);
+
+                // Texturas Pixel Art geradas via Canvas
+                const faceTex = VoxelTextureFactory.createFaceTexture();
+                const skinTex = VoxelTextureFactory.createSkinTexture();
+                const shirtFrontTex = VoxelTextureFactory.createShirtFrontTexture();
+                const blackFabricTex = VoxelTextureFactory.createBlackFabricTexture();
+                const cargoPantsTex = VoxelTextureFactory.createCargoPantsTexture();
+
+                // Materiais ricos
+                const skinMat = new THREE.MeshStandardMaterial({ map: skinTex, roughness: 0.55 });
+                const skinLightMat = new THREE.MeshStandardMaterial({ color: 0xEDA068, roughness: 0.5 });
+                const darkHairMat1 = new THREE.MeshStandardMaterial({ color: 0x22140E, roughness: 0.75 });
+                const darkHairMat2 = new THREE.MeshStandardMaterial({ color: 0x2F1B12, roughness: 0.75 });
+                const darkHairMat3 = new THREE.MeshStandardMaterial({ color: 0x180E09, roughness: 0.8 });
+
+                const blackShirtMat = new THREE.MeshStandardMaterial({ map: blackFabricTex, roughness: 0.7 });
+                const shirtMaterials = [
+                    blackShirtMat, // Direita
+                    blackShirtMat, // Esquerda
+                    blackShirtMat, // Topo
+                    blackShirtMat, // Baixo
+                    new THREE.MeshStandardMaterial({ map: shirtFrontTex, roughness: 0.65 }), // Frente com emblema vermelho
+                    blackShirtMat  // Costas
+                ];
+
+                const pantsMat = new THREE.MeshStandardMaterial({ map: cargoPantsTex, roughness: 0.8 });
+                const glassesFrameMat = new THREE.MeshStandardMaterial({ color: 0x161311, roughness: 0.3, metalness: 0.2 });
+                const lensMat = new THREE.MeshStandardMaterial({
+                    color: 0xFFFFFF,
+                    transparent: true,
+                    opacity: 0.16,
+                    roughness: 0.1,
+                    metalness: 0.3
+                });
+                const silverMat = new THREE.MeshStandardMaterial({ color: 0xD0D7DE, metalness: 0.75, roughness: 0.25 });
+                const watchDialMat = new THREE.MeshStandardMaterial({ color: 0x1E2229, roughness: 0.3 });
+                const shoeDarkMat = new THREE.MeshStandardMaterial({ color: 0x1C1C21, roughness: 0.7 });
+                const shoeGreyMat = new THREE.MeshStandardMaterial({ color: 0x7A7E85, roughness: 0.6 });
+                const shoeWhiteSoleMat = new THREE.MeshStandardMaterial({ color: 0xF0EEE9, roughness: 0.5 });
+
+                // Grupos hierárquicos para articulação perfeita
+                this.rig.torsoGroup = new THREE.Group();
+                this.rig.headGroup = new THREE.Group();
+                this.rig.headGroup.position.set(0, 1.72, 0);
+
+                this.rig.leftShoulder = new THREE.Group();
+                this.rig.leftShoulder.position.set(-0.50, 1.56, 0);
+                this.rig.leftElbow = new THREE.Group();
+                this.rig.leftElbow.position.set(0, -0.38, 0);
+                this.rig.leftShoulder.add(this.rig.leftElbow);
+
+                this.rig.rightShoulder = new THREE.Group();
+                this.rig.rightShoulder.position.set(0.50, 1.56, 0);
+                this.rig.rightElbow = new THREE.Group();
+                this.rig.rightElbow.position.set(0, -0.38, 0);
+                this.rig.rightShoulder.add(this.rig.rightElbow);
+
+                this.mascotRoot.add(
+                    this.rig.torsoGroup,
+                    this.rig.headGroup,
+                    this.rig.leftShoulder,
+                    this.rig.rightShoulder
+                );
+
+                const addVoxel = (parent, sx, sy, sz, px, py, pz, mat) => {
+                    const m = new THREE.Mesh(unitBox, mat);
+                    m.scale.set(sx, sy, sz);
+                    m.position.set(px, py, pz);
+                    m.castShadow = true;
+                    m.receiveShadow = true;
+                    parent.add(m);
+                    return m;
+                };
+
+                // ====================================================================
+                // 1. CABEÇA, ROSTO TEXTURIZADO, ÓCULOS VAZADOS E CABELO CACHEADO 3D
+                // ====================================================================
+                const headMaterials = [
+                    skinMat, // Direita
+                    skinMat, // Esquerda
+                    skinMat, // Topo
+                    skinMat, // Base
+                    new THREE.MeshStandardMaterial({ map: faceTex, roughness: 0.5 }), // Rosto frontal
+                    skinMat  // Nuca
+                ];
+                addVoxel(this.rig.headGroup, 0.78, 0.74, 0.68, 0, 0.40, 0, headMaterials);
+
+                // Orelhas em voxel
+                addVoxel(this.rig.headGroup, 0.08, 0.18, 0.14, -0.42, 0.36, -0.02, skinMat);
+                addVoxel(this.rig.headGroup, 0.08, 0.18, 0.14,  0.42, 0.36, -0.02, skinMat);
+
+                // Óculos 3D reais (aros vazados para mostrar os olhos, ponte, lentes e hastes laterais)
+                const buildGlassesSide = (sideSign) => {
+                    const cx = sideSign * 0.195;
+                    const cy = 0.41;
+                    const cz = 0.355;
+                    // Aro superior (mais grosso e expressivo igual à imagem)
+                    addVoxel(this.rig.headGroup, 0.30, 0.042, 0.04, cx, cy + 0.085, cz, glassesFrameMat);
+                    // Aro inferior
+                    addVoxel(this.rig.headGroup, 0.29, 0.028, 0.035, cx, cy - 0.085, cz, glassesFrameMat);
+                    // Aro externo e interno
+                    addVoxel(this.rig.headGroup, 0.035, 0.19, 0.04, cx + sideSign * 0.135, cy, cz, glassesFrameMat);
+                    addVoxel(this.rig.headGroup, 0.032, 0.18, 0.038, cx - sideSign * 0.13, cy, cz, glassesFrameMat);
+                    // Lente translúcida
+                    addVoxel(this.rig.headGroup, 0.24, 0.14, 0.015, cx, cy, cz, lensMat);
+                    // Haste lateral indo até a orelha
+                    addVoxel(this.rig.headGroup, 0.03, 0.035, 0.36, sideSign * 0.40, cy + 0.03, 0.16, glassesFrameMat);
+                };
+                buildGlassesSide(-1);
+                buildGlassesSide(1);
+                // Ponte central dos óculos
+                addVoxel(this.rig.headGroup, 0.11, 0.038, 0.04, 0, 0.44, 0.358, glassesFrameMat);
+
+                // Cabelo Cacheado/Texturizado Voxel 3D (múltiplos cubos formando os cachos volumosos das imagens)
+                // Base interna do cabelo
+                addVoxel(this.rig.headGroup, 0.84, 0.24, 0.74, 0, 0.78, -0.01, darkHairMat1);
+                addVoxel(this.rig.headGroup, 0.82, 0.56, 0.24, 0, 0.48, -0.27, darkHairMat1); // Parte de trás
+
+                // Grade de cachos em relevo no topo e franja
+                const hairMats = [darkHairMat1, darkHairMat2, darkHairMat3];
+                for (let gx = -3; gx <= 3; gx++) {
+                    for (let gz = -3; gz <= 3; gz++) {
+                        const hMat = hairMats[Math.abs(gx * 3 + gz * 5) % hairMats.length];
+                        const curlHeight = 0.12 + ((Math.abs(gx + gz) % 3) * 0.045);
+                        const px = gx * 0.115;
+                        const pz = gz * 0.105;
+                        addVoxel(this.rig.headGroup, 0.125, curlHeight, 0.12, px, 0.88 + curlHeight * 0.3, pz, hMat);
+                    }
+                }
+
+                // Franja frontal texturizada (com os pequenos degraus na testa igual à referência)
+                const fringeHeights = [0.16, 0.13, 0.18, 0.14, 0.17, 0.13, 0.16];
+                for (let i = 0; i < 7; i++) {
+                    const fx = (i - 3) * 0.115;
+                    const fh = fringeHeights[i];
+                    const hMat = hairMats[i % hairMats.length];
+                    addVoxel(this.rig.headGroup, 0.125, fh, 0.13, fx, 0.74 - fh * 0.25, 0.33, hMat);
+                }
+
+                // Laterais e costeletas texturizadas acima das orelhas
+                [-1, 1].forEach(side => {
+                    for (let sy = 0; sy < 4; sy++) {
+                        for (let sz = -2; sz <= 2; sz++) {
+                            if (sy === 0 && sz > 0) continue; // Abre espaço para a orelha
+                            const hMat = hairMats[(sy + Math.abs(sz)) % hairMats.length];
+                            addVoxel(
+                                this.rig.headGroup,
+                                0.10, 0.13, 0.13,
+                                side * 0.41,
+                                0.42 + sy * 0.11,
+                                sz * 0.12,
+                                hMat
+                            );
+                        }
+                    }
+                    // Costeleta curta ao lado dos óculos
+                    addVoxel(this.rig.headGroup, 0.08, 0.18, 0.09, side * 0.40, 0.44, 0.22, darkHairMat1);
+                });
+
+                // ====================================================================
+                // 2. PESCOÇO, TORSO (CAMISETA PRETA + EMBLEMA) E CORRENTE PRATEADA 3D
+                // ====================================================================
+                addVoxel(this.rig.torsoGroup, 0.28, 0.22, 0.26, 0, 1.72, 0, skinMat);
+                addVoxel(this.rig.torsoGroup, 0.76, 0.78, 0.40, 0, 1.28, 0, shirtMaterials);
+
+                // Corrente prateada em blocos 3D ao redor do pescoço + pingente circular
+                const chainSegments = [
+                    [-0.17, 1.66, 0.19], [-0.15, 1.60, 0.205], [-0.12, 1.54, 0.21],
+                    [-0.09, 1.48, 0.212], [-0.05, 1.43, 0.215],
+                    [ 0.17, 1.66, 0.19], [ 0.15, 1.60, 0.205], [ 0.12, 1.54, 0.21],
+                    [ 0.09, 1.48, 0.212], [ 0.05, 1.43, 0.215]
+                ];
+                chainSegments.forEach(([cx, cy, cz]) => {
+                    addVoxel(this.rig.torsoGroup, 0.036, 0.055, 0.03, cx, cy, cz, silverMat);
+                });
+                // Argola/Pingente prateado centralizado acima do símbolo vermelho
+                addVoxel(this.rig.torsoGroup, 0.09, 0.09, 0.035, 0, 1.37, 0.218, silverMat);
+                addVoxel(this.rig.torsoGroup, 0.045, 0.045, 0.04, 0, 1.37, 0.22, blackShirtMat); // Furo da argola
+
+                // ====================================================================
+                // 3. BRAÇOS COM MANGAS PRETAS, MÃOS DETALHADAS E RELÓGIO PRATEADO
+                // ====================================================================
+                // Braço Esquerdo (com o relógio prateado da imagem no pulso)
+                addVoxel(this.rig.leftShoulder, 0.28, 0.26, 0.30, 0, -0.08, 0, blackShirtMat); // Manga preta
+                addVoxel(this.rig.leftShoulder, 0.23, 0.22, 0.25, 0, -0.28, 0, skinMat);       // Bíceps
+
+                addVoxel(this.rig.leftElbow, 0.22, 0.36, 0.24, 0, -0.16, 0, skinMat);          // Antebraço
+                // Relógio prateado robusto com mostrador escuro e moldura metálica
+                addVoxel(this.rig.leftElbow, 0.245, 0.09, 0.265, 0, -0.27, 0.01, silverMat);   // Pulseira metálica
+                addVoxel(this.rig.leftElbow, 0.15, 0.13, 0.04, 0, -0.27, 0.145, silverMat);    // Caixa do relógio
+                addVoxel(this.rig.leftElbow, 0.11, 0.09, 0.045, 0, -0.27, 0.148, watchDialMat);// Mostrador escuro
+                // Mão esquerda + polegar/dedos para apontar
+                addVoxel(this.rig.leftElbow, 0.21, 0.17, 0.23, 0, -0.41, 0.02, skinLightMat);
+                addVoxel(this.rig.leftElbow, 0.07, 0.09, 0.09, 0.09, -0.39, 0.12, skinLightMat); // Polegar
+
+                // Braço Direito
+                addVoxel(this.rig.rightShoulder, 0.28, 0.26, 0.30, 0, -0.08, 0, blackShirtMat); // Manga preta
+                addVoxel(this.rig.rightShoulder, 0.23, 0.22, 0.25, 0, -0.28, 0, skinMat);       // Bíceps
+
+                addVoxel(this.rig.rightElbow, 0.22, 0.36, 0.24, 0, -0.16, 0, skinMat);          // Antebraço
+                // Mão direita + indicador/polegar expressivo
+                addVoxel(this.rig.rightElbow, 0.21, 0.17, 0.23, 0, -0.41, 0.02, skinLightMat);
+                addVoxel(this.rig.rightElbow, 0.07, 0.09, 0.09, -0.09, -0.39, 0.12, skinLightMat);
+
+                // ====================================================================
+                // 4. CALÇA CARGO ESCURA COM BOLSOS LATERAIS E TÊNIS DETALHADOS
+                // ====================================================================
+                // Cós/Quadril
+                addVoxel(this.rig.torsoGroup, 0.74, 0.14, 0.38, 0, 0.84, 0, pantsMat);
+
+                // Pernas com leve abertura natural em "A" igual às poses da prancha
+                const buildLegAndShoe = (sideSign) => {
+                    const legGroup = new THREE.Group();
+                    legGroup.position.set(sideSign * 0.195, 0.80, 0);
+                    legGroup.rotation.z = sideSign * 0.045; // Postura estilosa da prancha
+
+                    // Coxa e Canela Cargo
+                    addVoxel(legGroup, 0.33, 0.56, 0.35, 0, -0.26, 0, pantsMat);
+                    // Bolso Cargo 3D na lateral da perna
+                    addVoxel(legGroup, 0.05, 0.20, 0.20, sideSign * 0.18, -0.24, 0.02, pantsMat);
+
+                    // Tênis (Sola branca, corpo preto, detalhes cinzas e cadarço/biqueira branca)
+                    addVoxel(legGroup, 0.36, 0.07, 0.48, 0, -0.74, 0.05, shoeWhiteSoleMat); // Sola branca
+                    addVoxel(legGroup, 0.35, 0.14, 0.38, 0, -0.64, 0.01, shoeDarkMat);      // Corpo do tênis
+                    addVoxel(legGroup, 0.33, 0.09, 0.14, 0, -0.66, 0.22, shoeWhiteSoleMat); // Biqueira clara
+                    addVoxel(legGroup, 0.24, 0.06, 0.16, 0, -0.57, 0.12, shoeGreyMat);      // Língua/cadarço cinza
+
+                    this.rig.torsoGroup.add(legGroup);
+                };
+                buildLegAndShoe(-1);
+                buildLegAndShoe(1);
+
+                this.mascotRoot.position.set(0, 0, 0);
+                this.scene.add(this.mascotRoot);
+                this.setCharacterPose('Idle_Gesture', 0.1);
+            }
+
+            /**
+             * Controla as 5 poses/animações oficiais do personagem conforme a prancha visual:
+             * 1. Point_Next_Page (Apontar para a próxima página / botão)
+             * 2. Point_At_Text (Apontar para o texto)
+             * 3. Explain_Content (Acompanhar fragmentos de texto)
+             * 4. Hug (Gesto de abraço com braços abertos)
+             * 5. Idle_Gesture / Hold_Book (Espera acolhedora / Segurar livro)
+             */
+            setCharacterPose(poseName, duration = 0.65) {
+                this.currentPose = poseName;
+                if (!this.rig.leftShoulder || !this.rig.rightShoulder) return;
+
+                const poses = {
+                    // Pose de espera acolhedora
+                    'Idle_Gesture': {
+                        lShoulder: { x: 0.08, y: 0, z: 0.08 },
+                        lElbow:    { x: -0.18, y: 0, z: 0 },
+                        rShoulder: { x: 0.12, y: 0, z: -0.1 },
+                        rElbow:    { x: -0.25, y: 0, z: 0 },
+                        head:      { x: 0.02, y: 0.12, z: -0.03 },
+                        rootRotY:  0.18
+                    },
+                    // 1. Apontar para o botão / próxima página (prancha 1)
+                    'Point_Next_Page': {
+                        lShoulder: { x: 0.15, y: 0, z: 0.12 },
+                        lElbow:    { x: -0.25, y: 0, z: 0 },
+                        rShoulder: { x: -1.15, y: -0.35, z: -0.45 },
+                        rElbow:    { x: -0.35, y: 0, z: 0 },
+                        head:      { x: -0.04, y: 0.25, z: 0.05 },
+                        rootRotY:  0.22
+                    },
+                    // Segurando o livro fechado nas duas mãos (Cena 2A)
+                    'Hold_Book': {
+                        lShoulder: { x: -0.78, y: 0.32, z: 0.18 },
+                        lElbow:    { x: -0.65, y: 0.2, z: 0 },
+                        rShoulder: { x: -0.78, y: -0.32, z: -0.18 },
+                        rElbow:    { x: -0.65, y: -0.2, z: 0 },
+                        head:      { x: 0.12, y: 0, z: 0 },
+                        rootRotY:  0.0
+                    },
+                    // 2. Apontar para o texto (prancha 2)
+                    'Point_At_Text': {
+                        lShoulder: { x: 0.15, y: 0, z: 0.12 },
+                        lElbow:    { x: -0.25, y: 0, z: 0 },
+                        rShoulder: { x: -1.05, y: -0.28, z: -0.38 },
+                        rElbow:    { x: -0.45, y: 0, z: 0 },
+                        head:      { x: 0.0, y: 0.22, z: 0.04 },
+                        rootRotY:  0.28
+                    },
+                    // 3. Acompanhar fragmentos de texto (prancha 3)
+                    'Explain_Content': {
+                        lShoulder: { x: -0.55, y: 0.22, z: 0.15 },
+                        lElbow:    { x: -0.65, y: 0, z: 0 },
+                        rShoulder: { x: -0.95, y: -0.2, z: -0.28 },
+                        rElbow:    { x: -0.55, y: 0.15, z: 0 },
+                        head:      { x: -0.05, y: 0.18, z: -0.04 },
+                        rootRotY:  0.24
+                    },
+                    // 4. Gesto de Abraço aberto (prancha 4)
+                    'Hug': {
+                        lShoulder: { x: -1.05, y: -0.35, z: 0.85 },
+                        lElbow:    { x: -0.35, y: 0.2, z: 0 },
+                        rShoulder: { x: -1.05, y: 0.35, z: -0.85 },
+                        rElbow:    { x: -0.35, y: -0.2, z: 0 },
+                        head:      { x: -0.06, y: 0, z: 0.04 },
+                        rootRotY:  0.0
+                    }
+                };
+
+                const target = poses[poseName] || poses['Idle_Gesture'];
+
+                gsap.to(this.rig.leftShoulder.rotation, { ...target.lShoulder, duration, ease: "power2.out" });
+                gsap.to(this.rig.leftElbow.rotation, { ...target.lElbow, duration, ease: "power2.out" });
+                gsap.to(this.rig.rightShoulder.rotation, { ...target.rShoulder, duration, ease: "power2.out" });
+                gsap.to(this.rig.rightElbow.rotation, { ...target.rElbow, duration, ease: "power2.out" });
+                gsap.to(this.rig.headGroup.rotation, { ...target.head, duration, ease: "power2.out" });
+                gsap.to(this.mascotRoot.rotation, { y: target.rootRotY, x: 0, duration, ease: "power2.out" });
+            }
+
+            /**
+             * Animação especial quando Dayane clica em "Receber abraço virtual":
+             * O personagem inclina levemente o corpo para a frente, aproxima os braços
+             * em um abraço carinhoso, emite corações e retorna aos braços abertos.
+             */
+            triggerWarmEmbraceAnimation(onComplete) {
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        this.setCharacterPose('Hug', 0.7);
+                        if (onComplete) onComplete();
+                    }
+                });
+
+                // 1. Inclina suavemente para a frente e fecha os braços no abraço
+                tl.to(this.mascotRoot.position, { z: 0.45, duration: 0.55, ease: "power2.out" }, 0)
+                  .to(this.mascotRoot.rotation, { x: 0.12, duration: 0.55, ease: "power2.out" }, 0)
+                  .to(this.rig.leftShoulder.rotation, { x: -1.25, y: 0.48, z: 0.15, duration: 0.55, ease: "back.out(1.4)" }, 0)
+                  .to(this.rig.leftElbow.rotation, { x: -0.85, y: 0.35, z: 0, duration: 0.55 }, 0)
+                  .to(this.rig.rightShoulder.rotation, { x: -1.25, y: -0.48, z: -0.15, duration: 0.55, ease: "back.out(1.4)" }, 0)
+                  .to(this.rig.rightElbow.rotation, { x: -0.85, y: -0.35, z: 0, duration: 0.55 }, 0)
+                  // 2. Mantém o abraço aconchegante por um instante e retorna
+                  .to(this.mascotRoot.position, { z: 0, duration: 0.75, ease: "power2.inOut" }, "+=0.65")
+                  .to(this.mascotRoot.rotation, { x: 0, duration: 0.75, ease: "power2.inOut" }, "<");
+
+                this.burstExtraHearts(14);
+            }
+
+            burstExtraHearts(count = 10) {
+                for (let i = 0; i < count; i++) {
+                    const heart = this.createVoxelHeartMesh(0.075);
+                    heart.position.set(
+                        this.mascotRoot.position.x + (Math.random() - 0.5) * 1.4,
+                        1.3 + Math.random() * 0.9,
+                        this.mascotRoot.position.z + 0.3 + (Math.random() - 0.5) * 0.6
+                    );
+                    this.scene.add(heart);
+
+                    gsap.to(heart.position, {
+                        y: heart.position.y + 1.8 + Math.random() * 1.2,
+                        x: heart.position.x + (Math.random() - 0.5) * 1.6,
+                        duration: 1.8 + Math.random() * 0.8,
+                        ease: "power1.out",
+                        onComplete: () => {
+                            this.scene.remove(heart);
+                        }
+                    });
+                    gsap.to(heart.rotation, {
+                        y: Math.PI * 2,
+                        duration: 1.8,
+                        ease: "none"
+                    });
+                }
+            }
+
+            /**
+             * Transições de câmera e objetos 3D entre as 3 cenas principais
+             */
+            transitionToScene(sceneName, onComplete) {
+                const isMobile = window.innerWidth < 768;
+
+                if (sceneName === 'SCENE_1_INTRO') {
+                    this.bookGroup.visible = false;
+                    this.setCharacterPose('Idle_Gesture', 0.6);
+
+                    const targetCam = isMobile
+                        ? { x: 0, y: 2.25, z: 6.2 }
+                        : { x: 1.15, y: 1.85, z: 5.0 };
+                    const targetLook = isMobile
+                        ? { x: 0, y: 1.25, z: 0 }
+                        : { x: 0.85, y: 1.45, z: 0 };
+
+                    gsap.to(this.baseCamPos, { ...targetCam, duration: 1.1, ease: "power2.inOut" });
+                    gsap.to(this.baseLookAt, { ...targetLook, duration: 1.1, ease: "power2.inOut", onComplete });
+                }
+
+                else if (sceneName === 'SCENE_2_BOOK_CLOSED') {
+                    this.bookGroup.visible = true;
+                    this.bookFrontCoverPivot.rotation.y = 0;
+                    this.bookGroup.position.set(-0.22, 1.12, 0.52);
+                    this.bookGroup.rotation.set(-0.4, 0.1, 0);
+                    gsap.fromTo(this.bookGroup.scale,
+                        { x: 0.01, y: 0.01, z: 0.01 },
+                        { x: 1, y: 1, z: 1, duration: 0.8, ease: "back.out(1.6)" }
+                    );
+
+                    this.setCharacterPose('Hold_Book', 0.8);
+
+                    const targetCam = isMobile
+                        ? { x: 0, y: 1.85, z: 4.6 }
+                        : { x: 0, y: 1.75, z: 3.8 };
+                    const targetLook = isMobile
+                        ? { x: 0, y: 1.15, z: 0 }
+                        : { x: 0, y: 1.35, z: 0 };
+
+                    gsap.to(this.baseCamPos, { ...targetCam, duration: 1.1, ease: "power2.inOut" });
+                    gsap.to(this.baseLookAt, { ...targetLook, duration: 1.1, ease: "power2.inOut", onComplete });
+                }
+
+                else if (sceneName === 'SCENE_2_BOOK_OPEN') {
+                    // Animação cinematográfica: o livro flutua, aproxima-se e abre a capa 3D
+                    const tl = gsap.timeline({ onComplete });
+
+                    tl.to(this.bookGroup.position, {
+                        x: isMobile ? -0.15 : 0.35,
+                        y: 1.48,
+                        z: 1.35,
+                        duration: 0.75,
+                        ease: "power2.out"
+                    }, 0)
+                    .to(this.bookGroup.rotation, {
+                        x: 0.1,
+                        y: -0.2,
+                        z: 0,
+                        duration: 0.75,
+                        ease: "power2.out"
+                    }, 0)
+                    .to(this.bookFrontCoverPivot.rotation, {
+                        y: -Math.PI * 0.82,
+                        duration: 0.65,
+                        ease: "power2.inOut"
+                    }, 0.35)
+                    .to(this.bookGroup.scale, {
+                        x: 0.001,
+                        y: 0.001,
+                        z: 0.001,
+                        duration: 0.35,
+                        ease: "power2.in",
+                        onComplete: () => {
+                            this.bookGroup.visible = false;
+                        }
+                    }, 0.85);
+
+                    // Posiciona câmera para deixar o personagem visível ao lado do livro aberto
+                    const targetCam = isMobile
+                        ? { x: 0, y: 2.35, z: 6.4 }
+                        : { x: 1.25, y: 1.75, z: 4.6 };
+                    const targetLook = isMobile
+                        ? { x: 0, y: 1.15, z: 0 }
+                        : { x: 0.95, y: 1.4, z: 0 };
+
+                    gsap.to(this.baseCamPos, { ...targetCam, duration: 1.0, ease: "power2.inOut" });
+                    gsap.to(this.baseLookAt, { ...targetLook, duration: 1.0, ease: "power2.inOut" });
+
+                    this.setCharacterPose('Point_At_Text', 0.8);
+                }
+
+                else if (sceneName === 'SCENE_3_HUG') {
+                    // Sequência de fechamento do livro e revelação do abraço no pôr do sol
+                    this.bookGroup.visible = true;
+                    this.bookGroup.position.set(0.1, 1.45, 1.1);
+                    this.bookGroup.scale.set(1, 1, 1);
+                    this.bookFrontCoverPivot.rotation.y = -Math.PI * 0.82;
+
+                    const tl = gsap.timeline({
+                        onComplete: () => {
+                            this.bookGroup.visible = false;
+                            this.setCharacterPose('Hug', 0.85);
+                            this.burstExtraHearts(16);
+                            if (onComplete) onComplete();
+                        }
+                    });
+
+                    // Fecha a capa do livro 3D lentamente e recolhe
+                    tl.to(this.bookFrontCoverPivot.rotation, {
+                        y: 0,
+                        duration: 0.6,
+                        ease: "power2.inOut"
+                    }, 0)
+                    .to(this.bookGroup.position, {
+                        x: -0.2,
+                        y: 1.15,
+                        z: 0.4,
+                        duration: 0.55,
+                        ease: "power2.in"
+                    }, 0.35)
+                    .to(this.bookGroup.scale, {
+                        x: 0.001,
+                        y: 0.001,
+                        z: 0.001,
+                        duration: 0.45,
+                        ease: "back.in(1.4)"
+                    }, 0.45);
+
+                    // Iluminação mais quente e acolhedora para a cena final
+                    gsap.to(this.sunLight, { intensity: 1.4, duration: 1.2 });
+                    gsap.to(this.warmRimLight, { intensity: 1.35, duration: 1.2 });
+
+                    const targetCam = isMobile
+                        ? { x: 0, y: 2.05, z: 5.5 }
+                        : { x: 0, y: 1.8, z: 4.3 };
+                    const targetLook = isMobile
+                        ? { x: 0, y: 1.15, z: 0 }
+                        : { x: 0, y: 1.42, z: 0 };
+
+                    gsap.to(this.baseCamPos, { ...targetCam, duration: 1.2, ease: "power2.inOut" });
+                    gsap.to(this.baseLookAt, { ...targetLook, duration: 1.2, ease: "power2.inOut" });
+                }
+            }
+
+            bindPointerEvents() {
+                window.addEventListener('mousemove', (e) => {
+                    this.pointerOffset.x = (e.clientX / window.innerWidth - 0.5) * 2;
+                    this.pointerOffset.y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+                    if (this.isDragging) {
+                        const dx = e.clientX - this.dragStart.x;
+                        this.cameraOrbitAngle = Math.max(-0.45, Math.min(0.45, this.cameraOrbitAngle + dx * 0.004));
+                        this.dragStart.x = e.clientX;
+                    }
+                });
+
+                this.container.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.dragStart.x = e.clientX;
+                });
+
+                window.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                });
+
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+
+            onWindowResize() {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                this.camera.aspect = w / h;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(w, h);
+            }
+
+            animateLoop() {
+                requestAnimationFrame(() => this.animateLoop());
+
+                const elapsed = this.clock.getElapsedTime();
+
+                // Respiração sutil e vida no personagem 3D
+                if (this.mascotRoot && this.rig.torsoGroup) {
+                    this.mascotRoot.position.y = Math.sin(elapsed * 2.2) * 0.025;
+                    if (this.currentPose === 'Idle_Gesture' && this.rig.rightShoulder) {
+                        this.rig.rightShoulder.rotation.z = -0.1 + Math.sin(elapsed * 2.5) * 0.04;
+                    }
+                }
+
+                // Flutuação suave do Livro 3D quando visível
+                if (this.bookGroup && this.bookGroup.visible) {
+                    this.bookGroup.position.y += Math.sin(elapsed * 3.2) * 0.0008;
+                }
+
+                // Animação dos corações 3D e partículas douradas
+                this.floatingHearts.forEach((h) => {
+                    h.position.y = h.userData.baseY + Math.sin(elapsed * h.userData.speed + h.userData.phase) * 0.18;
+                    h.rotation.y = elapsed * 0.8 + h.userData.phase;
+                });
+
+                if (this.goldenParticles) {
+                    this.goldenParticles.rotation.y = elapsed * 0.04;
+                }
+
+                // Movimento lento das nuvens em blocos
+                this.clouds.forEach((c, idx) => {
+                    c.position.x += 0.003 * ((idx % 2 === 0) ? 1 : 0.7);
+                    if (c.position.x > 14) c.position.x = -14;
+                });
+
+                // Parallax suave de câmera com mouse + órbita
+                const targetX = this.baseCamPos.x + this.pointerOffset.x * 0.18 + Math.sin(this.cameraOrbitAngle) * 1.2;
+                const targetY = this.baseCamPos.y - this.pointerOffset.y * 0.1;
+                this.camera.position.x += (targetX - this.camera.position.x) * 0.06;
+                this.camera.position.y += (targetY - this.camera.position.y) * 0.06;
+                this.camera.position.z += (this.baseCamPos.z - this.camera.position.z) * 0.06;
+                this.camera.lookAt(this.baseLookAt);
+
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        /**
+         * ============================================================================
+         * MÓDULO 5: CONTROLADOR DE ESTADOS, LIVRO DE 8 PÁGINAS E INTERAÇÕES
+         * ============================================================================
+         */
+        const AppState = {
+            SCENE_1_INTRO: 'SCENE_1_INTRO',
+            TRANSITIONING: 'TRANSITIONING',
+            SCENE_2_BOOK_CLOSED: 'SCENE_2_BOOK_CLOSED',
+            SCENE_2_BOOK_OPEN: 'SCENE_2_BOOK_OPEN',
+            PAGE_TURNING: 'PAGE_TURNING',
+            SCENE_3_HUG: 'SCENE_3_HUG'
+        };
+
+        class LoveAdventureController {
+            constructor(world3D, audioEngine) {
+                this.world = world3D;
+                this.audio = audioEngine;
+                this.state = AppState.SCENE_1_INTRO;
+                this.currentPageIndex = 0;
+
+                // Suporte a gestos de swipe no celular
+                this.touchStartX = 0;
+                this.touchEndX = 0;
+
+                this.cacheDOM();
+                this.buildProgressBlocks();
+                this.renderPageContent(0);
+                this.bindEvents();
+            }
+
+            cacheDOM() {
+                this.scene1UI = document.getElementById('scene-1-ui');
+                this.scene2ClosedUI = document.getElementById('scene-2-closed-ui');
+                this.scene2OpenUI = document.getElementById('scene-2-open-ui');
+                this.scene3HugUI = document.getElementById('scene-3-hug-ui');
+                this.webglContainer = document.getElementById('webgl-container');
+
+                this.btnEnterWorld = document.getElementById('btn-enter-world');
+                this.btnOpenBook = document.getElementById('btn-open-book');
+                this.btnPrevPage = document.getElementById('btn-prev-page');
+                this.btnNextPage = document.getElementById('btn-next-page');
+                this.btnNextPageText = document.getElementById('btn-next-page-text');
+                this.hotspotPrev = document.getElementById('hotspot-prev-page');
+                this.hotspotNext = document.getElementById('hotspot-next-page');
+
+                this.bookPageSheet = document.getElementById('book-page-sheet');
+                this.pageCurlShadow = document.getElementById('page-curl-shadow');
+                this.pageBadgeNumber = document.getElementById('page-badge-number');
+                this.pageDecorativeIcons = document.getElementById('page-decorative-icons');
+                this.pageTitle = document.getElementById('page-title');
+                this.pageText = document.getElementById('page-text');
+                this.pageContentScroll = document.getElementById('page-content-scroll');
+                this.pageFooterNote = document.getElementById('page-footer-note');
+                this.pageProgressLabel = document.getElementById('page-progress-label');
+                this.pageProgressBlocks = document.getElementById('page-progress-blocks');
+
+                this.btnReceiveHug = document.getElementById('btn-receive-hug');
+                this.btnReopenBook = document.getElementById('btn-reopen-book');
+                this.btnResetJourney = document.getElementById('btn-reset-journey');
+                this.hugFeedbackMessage = document.getElementById('hug-feedback-message');
+            }
+
+            buildProgressBlocks() {
+                this.pageProgressBlocks.innerHTML = '';
+                for (let i = 0; i < DECLARATION_PAGES.length; i++) {
+                    const block = document.createElement('div');
+                    block.className = 'h-full rounded-sm border border-[#222222] transition-colors duration-300';
+                    this.pageProgressBlocks.appendChild(block);
+                }
+            }
+
+            renderPageContent(pageIdx) {
+                const page = DECLARATION_PAGES[pageIdx];
+                if (!page) return;
+
+                this.pageBadgeNumber.textContent = page.number;
+                this.pageTitle.textContent = page.title;
+                this.pageText.textContent = page.text;
+                this.pageFooterNote.textContent = page.footerNote;
+                this.pageProgressLabel.textContent = page.progressText;
+                this.pageContentScroll.scrollTop = 0;
+
+                // Ícones decorativos da página
+                this.pageDecorativeIcons.innerHTML = page.icons
+                    .map(ic => `<span>${ic}</span>`)
+                    .join('');
+
+                // Atualiza os 8 blocos de progresso
+                Array.from(this.pageProgressBlocks.children).forEach((bar, idx) => {
+                    if (idx < pageIdx) {
+                        bar.style.backgroundColor = '#4B7931'; // Verde concluído
+                    } else if (idx === pageIdx) {
+                        bar.style.backgroundColor = '#E02424'; // Vermelho coração atual
+                    } else {
+                        bar.style.backgroundColor = '#FFA9B6'; // Rosa suave pendente
+                    }
+                });
+
+                // Atualiza estado dos botões Anterior e Próxima
+                this.btnPrevPage.disabled = (pageIdx === 0);
+                this.hotspotPrev.style.display = (pageIdx === 0) ? 'none' : 'flex';
+
+                if (pageIdx === DECLARATION_PAGES.length - 1) {
+                    this.btnNextPageText.textContent = "Fechar Livro e Receber Carinho ❤️";
+                    this.btnNextPage.classList.add('mc-btn-red');
+                } else {
+                    this.btnNextPageText.textContent = "Próxima Página";
+                    this.btnNextPage.classList.remove('mc-btn-red');
+                }
+            }
+
+            bindEvents() {
+                // Controle de som
+                document.getElementById('btn-audio-toggle').addEventListener('click', () => {
+                    this.audio.toggleAudio();
+                });
+
+                // Hover e foco no botão da Cena 1 faz o personagem apontar para a interação
+                this.btnEnterWorld.addEventListener('mouseenter', () => {
+                    if (this.state === AppState.SCENE_1_INTRO) {
+                        this.world.setCharacterPose('Point_Next_Page', 0.45);
+                    }
+                });
+                this.btnEnterWorld.addEventListener('mouseleave', () => {
+                    if (this.state === AppState.SCENE_1_INTRO) {
+                        this.world.setCharacterPose('Idle_Gesture', 0.55);
+                    }
+                });
+
+                // Clique no botão principal da Cena 1 -> Transição para Cena 2 (Livro Fechado)
+                this.btnEnterWorld.addEventListener('click', () => {
+                    if (this.state !== AppState.SCENE_1_INTRO) return;
+                    this.audio.ensureStartedOnFirstInteraction();
+                    this.audio.playBlockClick(523.25);
+                    this.goToScene2BookClosed();
+                });
+
+                // Clique em "Clique aqui para amar mais" -> Abre o Livro 3D e exibe as 8 páginas
+                this.btnOpenBook.addEventListener('click', () => {
+                    if (this.state !== AppState.SCENE_2_BOOK_CLOSED) return;
+                    this.audio.playPageFlip();
+                    this.audio.playHeartChime();
+                    this.goToScene2BookOpen();
+                });
+
+                // Botões e bordas de página anterior / próxima
+                this.btnPrevPage.addEventListener('click', () => this.turnPage(-1));
+                this.hotspotPrev.addEventListener('click', () => this.turnPage(-1));
+                this.btnNextPage.addEventListener('click', () => this.turnPage(1));
+                this.hotspotNext.addEventListener('click', () => this.turnPage(1));
+
+                // Teclado (Setas esquerda e direita) durante leitura do livro
+                window.addEventListener('keydown', (e) => {
+                    if (this.state !== AppState.SCENE_2_BOOK_OPEN) return;
+                    if (e.key === 'ArrowRight') this.turnPage(1);
+                    if (e.key === 'ArrowLeft') this.turnPage(-1);
+                });
+
+                // Gestos de Swipe (toque) na página do livro
+                this.bookPageSheet.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                this.bookPageSheet.addEventListener('touchend', (e) => {
+                    this.touchEndX = e.changedTouches[0].screenX;
+                    const diff = this.touchStartX - this.touchEndX;
+                    if (Math.abs(diff) > 48) {
+                        if (diff > 0) this.turnPage(1);
+                        else this.turnPage(-1);
+                    }
+                }, { passive: true });
+
+                // Botão "Receber abraço virtual" na Cena 3
+                this.btnReceiveHug.addEventListener('click', () => {
+                    if (this.state !== AppState.SCENE_3_HUG) return;
+                    this.audio.playHeartChime();
+                    this.hugFeedbackMessage.textContent = "Sinta todo o meu carinho te envolvendo agora, mi momozin! Eu te amo infinitamente! ❤️🤗";
+                    this.world.triggerWarmEmbraceAnimation();
+                });
+
+                // Botão "Rever o nosso livro"
+                this.btnReopenBook.addEventListener('click', () => {
+                    if (this.state !== AppState.SCENE_3_HUG) return;
+                    this.audio.playPageFlip();
+                    this.currentPageIndex = 0;
+                    this.renderPageContent(0);
+                    this.switchUI(this.scene3HugUI, this.scene2OpenUI);
+                    this.webglContainer.classList.add('book-focus');
+                    this.state = AppState.TRANSITIONING;
+                    this.world.transitionToScene('SCENE_2_BOOK_OPEN', () => {
+                        this.state = AppState.SCENE_2_BOOK_OPEN;
+                    });
+                });
+
+                // Botão de voltar ao início
+                this.btnResetJourney.addEventListener('click', () => {
+                    if (this.state === AppState.TRANSITIONING || this.state === AppState.PAGE_TURNING) return;
+                    this.audio.playBlockClick(392.00);
+                    this.webglContainer.classList.remove('book-focus');
+                    this.btnResetJourney.classList.add('hidden');
+
+                    const activeUI = [this.scene2ClosedUI, this.scene2OpenUI, this.scene3HugUI]
+                        .find(el => !el.classList.contains('hidden'));
+
+                    this.state = AppState.TRANSITIONING;
+                    if (activeUI) {
+                        this.switchUI(activeUI, this.scene1UI);
+                    }
+                    this.world.transitionToScene('SCENE_1_INTRO', () => {
+                        this.state = AppState.SCENE_1_INTRO;
+                    });
+                });
+            }
+
+            switchUI(hideEl, showEl) {
+                if (hideEl) {
+                    hideEl.classList.remove('opacity-100');
+                    hideEl.classList.add('opacity-0');
+                    setTimeout(() => {
+                        hideEl.classList.add('hidden');
+                        hideEl.classList.remove('flex');
+                    }, 480);
+                }
+                if (showEl) {
+                    setTimeout(() => {
+                        showEl.classList.remove('hidden');
+                        showEl.classList.add('flex');
+                        requestAnimationFrame(() => {
+                            showEl.classList.remove('opacity-0');
+                            showEl.classList.add('opacity-100');
+                        });
+                    }, 350);
+                }
+            }
+
+            goToScene2BookClosed() {
+                this.state = AppState.TRANSITIONING;
+                this.world.setCharacterPose('Point_Next_Page', 0.35);
+                this.btnResetJourney.classList.remove('hidden');
+
+                this.switchUI(this.scene1UI, this.scene2ClosedUI);
+                this.world.transitionToScene('SCENE_2_BOOK_CLOSED', () => {
+                    this.state = AppState.SCENE_2_BOOK_CLOSED;
+                });
+            }
+
+            goToScene2BookOpen() {
+                this.state = AppState.TRANSITIONING;
+                this.currentPageIndex = 0;
+                this.renderPageContent(0);
+                this.webglContainer.classList.add('book-focus');
+
+                this.switchUI(this.scene2ClosedUI, this.scene2OpenUI);
+                this.world.transitionToScene('SCENE_2_BOOK_OPEN', () => {
+                    this.state = AppState.SCENE_2_BOOK_OPEN;
+                });
+            }
+
+            turnPage(direction) {
+                if (this.state !== AppState.SCENE_2_BOOK_OPEN) return;
+
+                const targetIndex = this.currentPageIndex + direction;
+
+                // Se estiver na página 08 e clicar em avançar, inicia a Cena Final do Abraço
+                if (targetIndex >= DECLARATION_PAGES.length) {
+                    this.goToScene3Hug();
+                    return;
+                }
+
+                if (targetIndex < 0) return;
+
+                this.state = AppState.PAGE_TURNING;
+                this.audio.playPageFlip();
+
+                const animClass = direction > 0 ? 'turning-next' : 'turning-prev';
+                this.pageCurlShadow.style.opacity = '1';
+                this.bookPageSheet.classList.remove('turning-next', 'turning-prev');
+                void this.bookPageSheet.offsetWidth; // Reflow para reiniciar animação CSS 3D
+                this.bookPageSheet.classList.add(animClass);
+
+                // Gesto do personagem acompanhando a mudança de página
+                this.world.setCharacterPose('Point_Next_Page', 0.3);
+
+                // Troca o texto exatamente na metade do giro 3D da folha (90 graus)
+                setTimeout(() => {
+                    this.currentPageIndex = targetIndex;
+                    this.renderPageContent(this.currentPageIndex);
+                    const nextPose = DECLARATION_PAGES[this.currentPageIndex].characterPose;
+                    this.world.setCharacterPose(nextPose, 0.5);
+                }, 310);
+
+                setTimeout(() => {
+                    this.bookPageSheet.classList.remove(animClass);
+                    this.pageCurlShadow.style.opacity = '0';
+                    this.state = AppState.SCENE_2_BOOK_OPEN;
+                }, 690);
+            }
+
+            goToScene3Hug() {
+                this.state = AppState.TRANSITIONING;
+                this.audio.playHeartChime();
+                this.webglContainer.classList.remove('book-focus');
+
+                this.switchUI(this.scene2OpenUI, this.scene3HugUI);
+                this.world.transitionToScene('SCENE_3_HUG', () => {
+                    this.state = AppState.SCENE_3_HUG;
+                });
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('voxel-toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        /**
+         * ============================================================================
+         * INICIALIZAÇÃO SEGURA NO WINDOW.ONLOAD
+         * ============================================================================
+         */
+        window.onload = function () {
+            try {
+                const audioEngine = new RomanticAudioEngine();
+                const world3D = new VoxelLoveWorld3D('webgl-container');
+                world3D.animateLoop();
+
+                new LoveAdventureController(world3D, audioEngine);
+            } catch (error) {
+                console.error("Erro na inicialização da experiência:", error);
+                showToast("Modo de compatibilidade ativado.");
+            }
+        };
+    </script>
+</body>
+</html>
